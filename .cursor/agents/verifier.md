@@ -18,6 +18,7 @@ Read:
 - active plan
 - active tasks
 - AGENTS.md
+- constitution (note `feat/strands` amendments: Strands harness allowed; deterministic tools/hooks still own gate/repair)
 
 Run quality gates when the environment allows:
 
@@ -46,7 +47,7 @@ For every acceptance criterion:
 
 Pay special attention to:
 
-- deterministic readiness gate
+- deterministic readiness gate (orchestrator **or** Strands tools/hooks — same product rule)
 - correction vs contradiction semantics
 - vague input behavior
 - prompt injection demo
@@ -54,10 +55,12 @@ Pay special attention to:
 - exactly one repair
 - mock LLM tests
 - LLM call-count assertions
+- early SSE `extracting` and live flush of generating/deltas (not buffered until tool end)
 - difficult-user transcripts
 - README length and content
 - accidental scope creep
 - frontend `tsc` cleanliness (agents must not hand over broken types)
+- default model path remains OpenRouter / `moonshotai/kimi-k3` unless env overrides
 
 Do not edit files.
 

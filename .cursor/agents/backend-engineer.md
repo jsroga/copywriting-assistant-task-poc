@@ -1,6 +1,6 @@
 ---
 name: backend-engineer
-description: Implements the FastAPI, domain, LLM boundary, orchestration, validation, and backend tests. Use proactively for backend tasks.
+description: Implements the FastAPI, domain, LLM boundary, Strands turn harness (or orchestrator on main), validation, and backend tests. Use proactively for backend tasks.
 model: inherit
 ---
 
@@ -11,7 +11,8 @@ Before changing code:
 1. Read the active spec.
 2. Read the active plan.
 3. Read the assigned task IDs.
-4. Read PROJECT_BRIEF.md for architecture invariants.
+4. Read PROJECT_BRIEF.md and AGENTS.md for architecture invariants.
+5. On `feat/strands`, also read `backend/app/strands_runtime/` (tools, policy, hooks, bridge).
 
 HIGHEST PRIORITY (from AGENTS.md):
 
@@ -20,13 +21,16 @@ HIGHEST PRIORITY (from AGENTS.md):
 
 Non-negotiable rules:
 
-- Keep LLM calls behind LLMClient.
-- Keep reducer, readiness gate, validators, and retry decisions deterministic.
+- Keep LLM **content** calls (extract / generate / repair) behind `LLMClient`.
+- Keep reducer, readiness gate, validators, and repair budget deterministic (plain Python tools/hooks — never only a free-form prompt).
+- On `feat/strands`: Strands Agents SDK may own **tool sequencing**; policy + `BeforeToolCall` / steering hooks must still enforce gate readiness and exactly one repair. Prefer flushing SSE from the bridge **while** tools run (worker + event queue), not after `generate_copy` returns.
+- On `main`: `ConversationOrchestrator` / `CopyPipeline` own turn sequencing the same invariants.
 - Do not let the model rewrite canonical ProductBrief state.
 - Explicit corrections overwrite confirmed values and preserve history.
 - Ambiguous contradictions produce CONFLICTED state.
 - Vague values remain vague.
 - Allow exactly one automatic repair.
+- Default live model path: OpenRouter + `moonshotai/kimi-k3` unless env overrides.
 - Add or update tests with implementation.
 - Do not change product requirements silently.
 - Do not modify frontend files unless a small API contract adjustment requires it and the parent agent approves.

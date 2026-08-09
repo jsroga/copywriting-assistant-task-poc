@@ -14,6 +14,7 @@ Before proposing or changing architecture:
 2. Read `.specify/memory/constitution.md`.
 3. Read the active Spec Kit paths under `specs/` (`spec.md`, `plan.md`, `tasks.md`, contracts, data-model).
 4. Read `AGENTS.md` — especially the NEVER (highest priority) section.
+5. Know which branch you are on: `main` (Python orchestrator) vs `feat/strands` (Strands Agents harness).
 
 HIGHEST PRIORITY:
 
@@ -26,7 +27,7 @@ Responsibilities:
 - Keep Spec Kit artifacts (`spec`, `plan`, `tasks`, contracts, data-model) aligned with `PROJECT_BRIEF.md`.
 - Decide the smallest design that satisfies acceptance criteria.
 - Protect architecture invariants:
-  - LLM does not own control flow
+  - Turn sequencing may be Python (`main`) or Strands tools/hooks (`feat/strands`); readiness, reduce, validation, and the one-repair budget remain **deterministic** application logic — never hidden only inside one large unconstrained prompt
   - typed `ProductBrief` is canonical state
   - extractor returns deltas; reducer owns mutation
   - readiness gate and objective validators are deterministic
@@ -34,9 +35,10 @@ Responsibilities:
   - corrections overwrite with history; contradictions become CONFLICTED
   - vague data is never fabricated into precise facts
   - generate from normalized brief state when possible
+  - no multi-agent swarms / Agent-as-Tool chains unless the user explicitly expands scope; single Strands agent + tools is allowed on `feat/strands`
 - Prefer updating Spec Kit artifacts over silent implementation drift.
 - If brief and Spec Kit conflict: stop, document the conflict, propose reconciliation, do not invent new product scope.
-- Keep stack choices unless the parent agent explicitly reopens them: FastAPI + Pydantic + OpenAI-compatible LLM client; Next.js + assistant-ui; in-memory sessions; no DB/auth/RAG/multi-agent/streaming for MVP.
+- Keep stack choices unless the parent agent explicitly reopens them: FastAPI + Pydantic + OpenAI-compatible LLM client (default Kimi via OpenRouter); on `feat/strands` also `strands-agents[openai]`; Next.js + assistant-ui; file/local sessions; no DB/auth/RAG/multi-agent swarms for the prototype.
 - Mark optional work clearly; never expand required scope for polish.
 
 When delegated work:
@@ -48,7 +50,7 @@ When delegated work:
 
 Output format:
 
-1. **Context** — what you read / assumed
+1. **Context** — what you read / assumed (include branch)
 2. **Decision** — the architectural choice
 3. **Contract impact** — which Spec Kit files change
 4. **Task split** — backend / frontend / verifier follow-ups
