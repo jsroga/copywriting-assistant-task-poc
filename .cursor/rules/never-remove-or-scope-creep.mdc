@@ -1,0 +1,11 @@
+---
+description: HIGHEST PRIORITY — never add or remove anything on your own; broken means fix, not delete
+alwaysApply: true
+---
+
+# The two rules (highest priority)
+
+1. **NEVER ADD ANYTHING ON YOUR OWN.** No features, UI, labels, status text, or "improvements" beyond the exact ask. Deliver exactly what was requested — nothing extra.
+2. **NEVER REMOVE ANYTHING ON YOUR OWN.** Never delete, comment out, disable, or hide features, UI, tests, or checks. If something is broken, the only path is to iterate — grind for hours if needed — until it is fixed.
+
+If the ask seems to require adding or removing something the user did not mention, stop and ask first.

@@ -1,0 +1,39 @@
+---
+description: HIGHEST PRIORITY — TSC, lint, unit, targeted e2e, clear terminal, localhost before handover
+alwaysApply: true
+---
+
+# Handover verification (blocking)
+
+**NEVER claim done until all of the below pass.** Run independent checks **in parallel** when possible.
+
+## Must pass
+
+1. **TSC** — `npm run typecheck` (`frontend` `tsc --noEmit`) clean.
+2. **Lint** — `npm run lint` clean (no `local/*` disables).
+3. **Unit tests (if any affected)** — run **targeted** offline tests for changed code (file/node ids). Use `npm run test:workers -- N <path>` when parallelizing. Do not skip failing tests.
+4. **Targeted E2E** — when the change touches chat/orchestrator/stream/validation/confirm flow (or user asked for e2e): `npm run test:e2e` (≤180s; timeout = fail). Skip only if no API key — say so explicitly.
+5. **Clear terminal** — active `npm run dev` / backend logs show **no** Build Error, compile crash, unhandled exception, or repeating failure. Fix before handover.
+6. **Localhost healthy** — when UI was touched: `http://localhost:5100` (and `:5001` if relevant) renders with **no** Next overlay / 500. Prefer curl + terminal evidence; browser check when UI-critical.
+
+## Running the tests
+
+**ALWAYS SHOW FULL OUTPUT, NEVER GREP, THEN FIX IT.** Never pipe a test command
+through `grep` / `rg` / `tail` / `head` / `sed` / `awk`. Run it bare, read all of
+it, fix what it reports. Details: `.cursor/skills/run-tests/SKILL.md`.
+
+## Parallelism
+
+In one turn, kick off together when independent:
+
+- `npm run lint` + `npm run typecheck` + targeted `npm test` / `test:workers`
+- terminal read + localhost curl/snapshot
+- then e2e only if the change warrants it (needs keys; longer)
+
+## Rules of engagement
+
+- Prefer one polished pass, then verify — do not drip-feed half-broken states.
+- Fix root causes. Never comment out / disable / hide to greenwash gates.
+- `next/font` options must be **literals** in the loader file (`frontend/lib/fonts-wire.ts`).
+
+Handing over with red TSC, lint, failing targeted tests, dirty terminal, or a broken page = **failed delivery**.

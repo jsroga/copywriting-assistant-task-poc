@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/record-frontend-edits.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/eslint-frontend-on-stop.sh",
+        "loop_limit": 2
+      }
+    ]
+  }
+}

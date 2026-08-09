@@ -1,0 +1,45 @@
+---
+description: Frontend must pass root ESLint with tilemap local rules — no bypass
+globs: frontend/**/*.{ts,tsx}
+alwaysApply: true
+---
+
+# Frontend ESLint gate (hard requirement)
+
+This repo copies custom rules from `tilemap/eslint-rules` into `eslint-rules/`.
+
+Configured in root `eslint.config.js`. Enforced by Cursor stop hook
+`.cursor/hooks/eslint-frontend-on-stop.sh` (`eslint` + `tsc --noEmit`) and
+`npm run quality`.
+
+## Local rules (error — do not disable)
+
+| Rule | Meaning |
+|------|---------|
+| `local/no-magic-string` | Runtime string literals → `SCREAMING` consts, `enums.ts` / `constants/`, or allowed `*-wire.ts` / `*-schema.ts` files (`allowJsx: true` for JSX labels/classes) |
+| `local/max-lines-strict` | Hard file length cap (see `scripts/code-metrics-limits.cjs`) — split modules |
+| `local/complexity-strict` | Hard cyclomatic complexity cap — extract helpers |
+| `local/no-repeated-array-filter` | Do not filter the same array twice; partition in one pass |
+
+## Also error
+
+- `@typescript-eslint/no-explicit-any`
+- `@typescript-eslint/consistent-type-assertions` with `assertionStyle: 'never'` (`as const` only)
+
+## Forbidden
+
+- `eslint-disable` for `local/*` rules
+- Weakening thresholds in `scripts/code-metrics-limits.cjs` without an explicit user request
+
+## Before declaring frontend work done
+
+```bash
+npm install   # repo root
+npm run lint
+npm run typecheck   # frontend tsc --noEmit — mandatory
+npm run quality     # lint + typecheck + backend unit tests
+```
+
+Do not hand over with failing TypeScript. IDE red squiggles on context types
+usually mean `ChatSession` / `SessionState` drifted — fix types,
+then prove with `npm run typecheck`.

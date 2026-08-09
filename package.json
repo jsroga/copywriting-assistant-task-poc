@@ -1,0 +1,33 @@
+{
+  "name": "copywriting-assistant-task-poc",
+  "private": true,
+  "description": "E-commerce copywriting assistant — root scripts + frontend ESLint gate",
+  "scripts": {
+    "setup": "npm install && npm --prefix frontend install && (cd backend && PATH=\"$HOME/.local/bin:$PATH\" uv sync)",
+    "dev": "concurrently -k -n backend,frontend,warm -c blue,green,magenta \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run warm:next\"",
+    "dev:backend": "cd backend && PATH=\"$HOME/.local/bin:$PATH\" uv run uvicorn app.main:app --reload --host localhost --port 5001",
+    "dev:frontend": "npm --prefix frontend run dev -- --hostname localhost --port 5100",
+    "warm:next": "node scripts/warm-next.mjs",
+    "test": "cd backend && PATH=\"$HOME/.local/bin:$PATH\" uv run pytest -q",
+    "test:workers": "cd backend && PATH=\"$HOME/.local/bin:$PATH\" uv run pytest -q -n",
+    "test:integration": "cd backend && PATH=\"$HOME/.local/bin:$PATH\" uv run pytest -m integration -q",
+    "test:e2e": "cd backend && PATH=\"$HOME/.local/bin:$PATH\" uv run pytest -m integration tests/test_live_e2e_imba_seat.py -q -s --timeout=180",
+    "lint": "eslint --no-error-on-unmatched-pattern \"frontend/**/*.{ts,tsx}\"",
+    "lint:frontend": "npm run lint",
+    "typecheck": "npm --prefix frontend run typecheck",
+    "quality": "npm run lint && npm run typecheck && npm test",
+    "build": "npm --prefix frontend run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "concurrently": "^9.2.0",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "typescript": "^5.9.2"
+  }
+}
