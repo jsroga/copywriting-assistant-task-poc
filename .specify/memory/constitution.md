@@ -1,9 +1,12 @@
 <!--
 Sync Impact Report
-- Version change: (template) → 1.0.0
-- Modified principles: placeholders → eight project principles from PROJECT_BRIEF.md
-- Added sections: Architecture Constraints; Development Workflow
-- Removed sections: none (template placeholders replaced)
+- Version change: 1.0.0 → 1.1.0
+- Modified principles: I (Deterministic Control Flow) — allow Strands Agents SDK as
+  turn harness; readiness/reduce/validation/repair budget stay deterministic tools/hooks
+- Modified Architecture Constraints: permit Strands Agents (single agent + tools);
+  still forbid LangGraph/CrewAI/AutoGen/Squad and multi-agent swarms
+- Added sections: none
+- Removed sections: none
 - Follow-up TODOs: none
 -->
 
@@ -12,14 +15,14 @@ Sync Impact Report
 ## Core Principles
 
 ### I. Deterministic Control Flow
-The LLM MUST NOT own application control flow. The LLM MAY extract structured
-facts, classify intent, generate copy, repair copy after failed validation, and
-optionally judge subjective tone. Deterministic application code MUST merge
-extracted facts, apply corrections, track contradictions, decide readiness,
-select the next missing or ambiguous field, validate objective output
-requirements, enforce the retry budget, and prevent more than one automatic
-repair attempt. The readiness decision MUST NEVER be hidden inside one large
-prompt.
+The Strands Agents SDK MAY own turn sequencing (which tool runs next) as the
+application harness. The model MUST NOT hide readiness, reduce, validation, or
+repair-budget rules inside one large unconstrained prompt. Deterministic Python
+tools and hooks MUST merge extracted facts, apply corrections, track
+contradictions, decide readiness, select the next missing or ambiguous field,
+validate objective output requirements, and enforce exactly one automatic repair
+attempt. The LLM MAY extract structured facts, classify intent, generate copy,
+repair copy after failed validation, and optionally judge subjective tone.
 
 ### II. Structured State as Source of Truth
 The conversation transcript is NOT the source of truth for product data. A typed
@@ -46,10 +49,11 @@ repair attempt. Unbounded generation retry loops are FORBIDDEN.
 ### VI. Scope Discipline
 This is a 6 to 8 hour prototype. The implementation MUST prefer the smallest
 solution that proves the evaluation criteria. Authentication, database
-persistence, RAG, vector databases, runtime multi-agent frameworks, background
-jobs, complex observability platforms, production deployment infrastructure,
-elaborate UI animation, and unnecessary abstractions MUST NOT be added until all
-required functionality is complete.
+persistence, RAG, vector databases, multi-agent swarms / Agent-as-Tool chains,
+background jobs, complex observability platforms, production deployment
+infrastructure, elaborate UI animation, and unnecessary abstractions MUST NOT be
+added until all required functionality is complete. The Strands Agents SDK
+(single agent + deterministic domain tools/hooks) is an allowed turn harness.
 
 ### VII. Spec First, Implementation Second
 The active Spec Kit specification, plan, and task list are binding
@@ -66,14 +70,15 @@ cutting testable core behavior.
 ## Architecture Constraints
 
 - Stack is fixed for this prototype: Next.js + TypeScript + assistant-ui frontend;
-  FastAPI + Python 3.12+ + Pydantic backend; OpenAI Structured Outputs for LLM
-  calls; in-memory session storage.
+  FastAPI + Python 3.12+ + Pydantic backend; Strands Agents SDK turn harness with
+  OpenAI-compatible model provider (OpenRouter/OpenAI); in-memory session storage.
 - Extractor returns deltas only; reducer owns canonical state mutation.
 - Completeness/readiness gate and objective validators are deterministic code.
-- No token streaming in MVP; validate before presenting final copy.
+- Token streaming is allowed for description/email deltas over SSE; validate before
+  treating copy as successful final output.
 - Prompt injection handling is pragmatic containment, not a security product claim.
-- No LangGraph, CrewAI, AutoGen, Squad, or equivalent runtime multi-agent
-  orchestration.
+- Strands Agents (single agent + tools + hooks) is the allowed agent harness.
+- No LangGraph, CrewAI, AutoGen, Squad, or multi-agent swarm orchestration.
 
 ## Development Workflow
 
@@ -103,4 +108,4 @@ against unmet acceptance criteria. `PROJECT_BRIEF.md` remains the original produ
 and architecture brief; active Spec Kit artifacts under `specs/` are the binding
 implementation contract once reconciled with the brief.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-09 | **Last Amended**: 2026-08-09
+**Version**: 1.1.0 | **Ratified**: 2026-08-09 | **Last Amended**: 2026-08-09

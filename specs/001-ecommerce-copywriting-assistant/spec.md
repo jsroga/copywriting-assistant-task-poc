@@ -124,8 +124,8 @@ Operators and evaluators can see current structured product brief, field statuse
 - **FR-021**: The web UI MUST show chat messages, assistant responses, live ProductBrief values/statuses/version, and generation validation status.
 - **FR-022**: The repository MUST include at least three difficult-user transcripts (contradiction, prompt injection, vague input) under demos, plus a root README of roughly one page covering architecture, trade-offs, local setup, and future improvements.
 - **FR-023**: Core extraction integration, reducer, readiness gate, validators, retry logic, and orchestration MUST be testable without network model calls via a deterministic fake/mock LLM, including generate/repair call-count assertions.
-- **FR-024**: Extractor intent classification MUST NOT decide whether generation is allowed; readiness remains deterministic application logic.
-- **FR-025**: Scope MUST exclude authentication, database servers, RAG/vector DBs, runtime multi-agent frameworks on the delivered `main` path, background jobs, and production deployment infrastructure. Token streaming via SSE is an implemented UX addition beyond the minimum architecture (validate still runs on complete artifacts). Local JSON session files are allowed as demo persistence (not a database).
+- **FR-024**: Extractor intent classification MUST NOT decide whether generation is allowed; readiness remains deterministic application logic (gate tool / hooks), even when a Strands agent chooses which tool to invoke next.
+- **FR-025**: Scope MUST exclude authentication, database persistence, RAG/vector DBs, multi-agent swarms / Agent-as-Tool chains, background jobs, and production deployment infrastructure. A single Strands Agents SDK agent with deterministic domain tools/hooks is in scope as the turn harness. SSE token streaming for description/email is in scope.
 
 ### Key Entities
 

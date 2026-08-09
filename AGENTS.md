@@ -121,7 +121,8 @@ When delegating, pass active spec/plan/tasks paths and relevant task IDs.
 
 ## Architecture invariants
 
-The LLM does not own control flow.
+The Strands Agents SDK may own turn sequencing (tool choice). Readiness, reduce,
+validation, and the one-repair budget remain deterministic Python tools/hooks.
 
 The canonical product state is a typed ProductBrief.
 
@@ -174,6 +175,6 @@ This is a 6 to 8 hour take-home prototype.
 
 Prefer simple code over speculative abstractions.
 
-Do not add a database, auth, RAG, runtime multi-agent framework, background jobs, or production infrastructure unless every required acceptance criterion is already complete.
+Do not add a database, auth, RAG, multi-agent swarms, background jobs, or production infrastructure unless every required acceptance criterion is already complete. A single Strands Agents SDK agent with deterministic domain tools is allowed as the turn harness.
 
 Do not spend time on visual polish before the deterministic core, tests, and difficult-user demos pass.

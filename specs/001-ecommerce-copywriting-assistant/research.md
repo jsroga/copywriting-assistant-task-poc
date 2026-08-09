@@ -5,11 +5,11 @@
 
 All Technical Context items were pre-decided by `PROJECT_BRIEF.md`. This document records decisions, rationale, and rejected alternatives so plan/tasks stay aligned.
 
-## Decision 1: LLM as parser/generator; app as workflow engine
+## Decision 1: Strands harness; deterministic domain tools
 
-- **Decision**: Use LLM only for extract / generate / repair. Deterministic Python owns reduce, gate, questions, validation, repair budget.
-- **Rationale**: Matches constitution principles I–V and evaluation criteria for inspectable readiness and bounded retry.
-- **Alternatives considered**: Runtime multi-agent frameworks (LangGraph/CrewAI/AutoGen) — rejected as out of scope and obscuring control flow.
+- **Decision**: Strands Agents SDK (single agent) owns turn sequencing via tools. Deterministic Python tools/hooks own reduce, gate, questions, validation, repair budget. LLM content calls (extract / generate / repair) stay behind `LLMClient` inside tools.
+- **Rationale**: Matches amended constitution principle I (1.1.0) and keeps readiness/repair inspectable while adopting Strands as the harness.
+- **Alternatives considered**: LangGraph/CrewAI/AutoGen multi-agent swarms — rejected as out of scope; pure Python orchestrator without Strands — prior baseline, replaced on `feat/strands`.
 
 ## Decision 2: OpenAI Structured Outputs behind LLMClient
 

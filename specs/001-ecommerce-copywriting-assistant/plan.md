@@ -8,25 +8,25 @@
 
 ## Summary
 
-Build a conversational e-commerce copywriting assistant where the LLM extracts structured deltas and generates/repairs copy, while deterministic Python code owns reduce, readiness, questions, validation, and the one-repair budget. Deliver a minimal Next.js + assistant-ui chat demo with a live ProductBrief/validation panel, mocked-LLM tests, and difficult-user transcripts.
+Build a conversational e-commerce copywriting assistant where a Strands Agents SDK agent owns turn sequencing via tools, while deterministic Python tools/hooks own reduce, readiness, questions, validation, and the one-repair budget. The LLM extracts structured deltas and generates/repairs copy inside those tools. Deliver a minimal Next.js + assistant-ui chat demo with a live ProductBrief/validation panel, mocked-LLM tests, and difficult-user transcripts.
 
 ## Technical Context
 
 **Language/Version**: Python 3.12+ (backend), TypeScript (frontend / Next.js)
 
-**Primary Dependencies**: FastAPI, Pydantic, OpenAI Python SDK (Structured Outputs); Next.js, assistant-ui, minimal shadcn-style primitives
+**Primary Dependencies**: FastAPI, Pydantic, strands-agents[openai], OpenAI Python SDK (Structured Outputs inside tools); Next.js, assistant-ui, minimal shadcn-style primitives
 
 **Storage**: In-memory `dict[str, Session]` (no database)
 
-**Testing**: pytest with FakeLLMClient; frontend lint/build
+**Testing**: pytest with FakeLLMClient + Strands tool/hook unit tests; frontend lint/build
 
 **Target Platform**: Local developer machines (macOS/Linux); browser UI + local API
 
 **Project Type**: Web application (frontend + backend)
 
-**Performance Goals**: Interactive local demo; no production SLA. Bound LLM cost via one repair maximum and no streaming.
+**Performance Goals**: Interactive local demo; no production SLA. Bound LLM cost via one repair maximum; SSE streaming for copy tokens.
 
-**Constraints**: 6–8 hour prototype; no auth/DB/RAG/multi-agent/streaming; LLM behind `LLMClient`; readiness + validators deterministic; OPENAI_API_KEY / OPENAI_MODEL via env
+**Constraints**: 6–8 hour prototype; no auth/DB/RAG/multi-agent swarms; Strands single-agent harness; LLM content calls behind `LLMClient` inside tools; readiness + validators deterministic; OPENROUTER_API_KEY / OPENAI_API_KEY / OPENAI_MODEL via env
 
 **Scale/Scope**: Single-process demo; one operator session at a time is sufficient; ~one-page README; ≥3 difficult-user transcripts
 
@@ -36,12 +36,12 @@ Build a conversational e-commerce copywriting assistant where the LLM extracts s
 
 | Principle | Status | Notes |
 |-----------|--------|-------|
-| I. Deterministic control flow | PASS | Orchestrator + gate + validators own flow |
+| I. Deterministic control flow | PASS | Strands harness + deterministic tools/hooks own reduce/gate/validate/repair budget |
 | II. Structured state source of truth | PASS | Typed ProductBrief; generator uses normalized brief |
-| III. Mockable LLM boundaries | PASS | LLMClient + FakeLLMClient + OpenAILLMClient |
+| III. Mockable LLM boundaries | PASS | LLMClient + FakeLLMClient + OpenAILLMClient inside tools |
 | IV. Explicit uncertainty | PASS | MISSING/VAGUE/CONFIRMED/CONFLICTED |
 | V. Bounded generation repair | PASS | Exactly one automatic repair |
-| VI. Scope discipline | PASS | No DB/auth/RAG/multi-agent/streaming |
+| VI. Scope discipline | PASS | No DB/auth/RAG/multi-agent swarms; Strands single agent allowed |
 | VII. Spec first | PASS | Implementing from Spec Kit artifacts |
 | VIII. Tests before polish | PASS | Core pytest contract before UI polish |
 

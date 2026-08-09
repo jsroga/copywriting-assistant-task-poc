@@ -1,6 +1,8 @@
 """Streaming must emit an early status frame before the blocking extract call."""
 
-from app.domain.models import ExtractionResult, Intent
+import threading
+
+from app.domain.models import ExtractionResult, Intent, ProductBrief
 from app.llm.fake_client import FakeLLMClient, make_complete_brief, make_valid_copy
 from app.orchestration import ConversationOrchestrator
 from app.store import SessionStore
@@ -48,6 +50,46 @@ def test_iter_turn_events_emits_extracting_before_any_llm_work():
         if name == "email_delta" and isinstance(payload, dict)
     ]
     assert email_deltas, "expected email token deltas"
+
+
+def test_generating_status_flushes_before_description_stream_finishes():
+    """SSE must leave the server while generate_copy is still streaming — not after."""
+    release_stream = threading.Event()
+
+    class BlockingStreamLLM(FakeLLMClient):
+        def stream_product_description(self, brief: ProductBrief):
+            self.stream_calls += 1
+            self.generate_calls += 1
+            self.last_generate_brief = brief.model_copy(deep=True)
+            self._stream_cache = make_valid_copy(brief)
+            assert release_stream.wait(timeout=5.0), "timed out waiting for flush"
+            yield self._stream_cache.product_description
+
+    store = SessionStore()
+    session = store.get_or_create("flush-1")
+    session.brief = make_complete_brief()
+    session.awaiting_generation_confirmation = True
+    store.save(session)
+
+    llm = BlockingStreamLLM(
+        extract_queue=[ExtractionResult(intent=Intent.PROVIDE_INFO, updates=[])],
+    )
+    orch = ConversationOrchestrator(store=store, llm=llm)
+
+    saw_generating = False
+    for name, payload in orch.iter_turn_events("flush-1", "confirm"):
+        if (
+            name == "validation_status"
+            and isinstance(payload, dict)
+            and payload.get("phase") == "generating"
+        ):
+            saw_generating = True
+            # Stream is still blocked in the worker — proving we flushed mid-tool.
+            assert not release_stream.is_set()
+            release_stream.set()
+
+    assert saw_generating
+    assert llm.stream_calls == 1
 
 
 def test_sessions_are_isolated_by_id():

@@ -173,3 +173,16 @@ Phase 1 Setup
 - [ ] T047 [Optional] Deduplicate root vs `frontend/package-lock.json` via npm workspaces or documented dual-lock approach
 - [ ] T048 [Optional] Add HTTP-level FastAPI contract test for `POST /api/chat/{session_id}` response envelope
 
+---
+
+## Phase 9: Strands Agents turn harness (`feat/strands`)
+
+**Purpose**: Replace Python-owned turn sequencing with Strands Agents SDK (single agent + tools/hooks); keep domain tools deterministic and SSE contract stable.
+
+- [x] T049 Reconcile constitution/spec/plan for Strands-owned turn sequencing + deterministic tools/hooks
+- [x] T050 Add `strands-agents[openai]` to `backend/pyproject.toml`; OpenAIModel via OpenRouter/OpenAI env in `backend/app/strands_runtime/model.py`
+- [x] T051 Implement turn context, policy, domain `@tool`s, and hooks in `backend/app/strands_runtime/`
+- [x] T052 Implement SSE bridge + wire `ConversationOrchestrator` / `main.py` to Strands harness; preserve FakeLLM offline path
+- [x] T053 Adapt/extend orchestrator + repair + stream-early tests; assert one-repair and early `extracting` frame
+- [x] T054 Run `npm run quality` + targeted e2e when keys available
+
