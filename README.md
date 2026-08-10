@@ -1,6 +1,6 @@
 # AI-Powered E-Commerce Copywriting Assistant
 
-Conversational take-home prototype: gather product facts into a typed `ProductBrief`, ask deterministic follow-ups, confirm, then generate a validated product description and marketing email with at most one automatic repair.
+Conversational take-home prototype: gather product facts into a typed `ProductBrief`, ask deterministic follow-ups, confirm, then generate a validated product description and marketing email with at most one automatic repair. The web UI is a thin demo — interface polish is not the deliverable.
 
 ## Architecture
 
@@ -12,7 +12,7 @@ User → Next.js + assistant-ui → FastAPI → Orchestrator
 
 - **LLM**: structured extraction, description/email generation, and repair only
 - **Reducer / gate / validators / repair budget**: deterministic Python (control flow stays outside the LLM)
-- **UI**: chat, live Product Brief (all fields, always visible, toggleable panel), token-streamed description and email body, HTML email preview (in both the brief panel and the delivered chat message), validation badge showing pass/fail plus plain-language failure details, and a live spinner while validating or retrying a failed check
+- **UI**: chat, live Product Brief (all fields, always visible, toggleable panel), token-streamed description and email body (UX addition beyond the minimum), HTML email preview, validation badge with pass/fail details
 
 ## Key decisions and trade-offs
 
@@ -20,19 +20,21 @@ User → Next.js + assistant-ui → FastAPI → Orchestrator
 Benefit: `uvicorn --reload` / process restart no longer wipe a mid-demo brief. Trade-off: slightly beyond pure in-memory; still zero ops (files under `backend/.data/sessions/`, gitignored).
 
 ### Deterministic readiness gate
-Benefit: testable and explainable “enough info?” decision. Trade-off: less flexible for unusual categories. Required: `product_name`, `key_features` (≥1 meaningful item — `MIN_KEY_FEATURES`), `target_audience`, `tone`, `price`. Optional: `category`, `brand_name` — asked once each, and an explicit “generate the description” skips whichever are still empty rather than blocking on them (the skip is recorded as an assumption). The panel labels every field Required or Optional so the gate's demands are visible.
+Benefit: testable “enough info?” decision. Required: `product_name`, `key_features` (≥1 meaningful item — trim, length ≥3, ≥1 alphanumeric), `target_audience`, `tone`, `price`. Optional: `category`, `brand_name` — asked once each; explicit “generate” may skip remaining empties (recorded as assumptions). Price is required because it materially changes both outputs (task leaves field choice to the implementer).
 
 ### Confirm before generate
 Benefit: user can still correct price/brand before spendy generation. Trade-off: one extra turn vs auto-generate.
 
 ### Stream description and email tokens, validate after full copy
-Benefit: better UX while writing; an early SSE frame goes out before the blocking extract call so the connection is never silent. Trade-off: validation/repair still run only on the completed description+email (not mid-token) — tokens are UX, not truth.
+Benefit: better UX; early SSE frame before extract. Trade-off: validation/repair run only on completed artifacts — tokens are UX, not truth. Confirmed price must appear as a whole token (`$49` ≠ `$499`).
 
 ### Browser refresh starts a new session
-Benefit: each demo run is clean and never resumes or merges an earlier brief. Trade-off: an accidental reload loses the in-progress brief (backend reloads, by contrast, survive — see below).
+Benefit: clean demos. Trade-off: accidental reload loses the in-progress brief (backend reloads survive via JSON files).
 
 ### One repair maximum
 Benefit: bounded cost/latency. Trade-off: second invalid output surfaces as failure.
+
+`feat/strands` explored a Strands Agents harness with the same domain layer; `main` keeps the Python orchestrator.
 
 ## Difficult scenarios
 

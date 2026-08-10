@@ -13,6 +13,11 @@ from app.domain.models import (
 
 MIN_KEY_FEATURES = 1
 
+# Single rule for "meaningful" key features (gate + feature-coverage validator).
+# After trim: at least 3 characters and at least one alphanumeric — rejects
+# empty/noise fillers like "x" or "ok" without a stopword list.
+MIN_MEANINGFUL_FEATURE_CHARS = 3
+
 
 def meaningful_features(value: str | list[str] | None) -> list[str]:
     if value is None:
@@ -21,7 +26,7 @@ def meaningful_features(value: str | list[str] | None) -> list[str]:
     features: list[str] = []
     for item in items:
         text = str(item).strip()
-        if len(text) >= 2:
+        if len(text) >= MIN_MEANINGFUL_FEATURE_CHARS and any(ch.isalnum() for ch in text):
             features.append(text)
     return features
 

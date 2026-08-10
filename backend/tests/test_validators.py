@@ -29,6 +29,20 @@ def test_price_presence_pass_and_fail():
     assert ViolationCode.MISSING_PRICE in codes
 
 
+def test_price_presence_rejects_substring_of_longer_price():
+    """Regression: confirmed $49 must not pass against copy that only has $499."""
+    brief = make_complete_brief(price="$49")
+    copy = make_valid_copy(brief)
+    copy.product_description = copy.product_description.replace("$49", "$499")
+    copy.marketing_email.body = copy.marketing_email.body.replace("$49", "$499")
+    codes = {v.code for v in validate(copy, brief)}
+    assert ViolationCode.MISSING_PRICE in codes
+
+    # Exact token still passes.
+    exact = make_valid_copy(brief)
+    assert not any(v.code == ViolationCode.MISSING_PRICE for v in validate(exact, brief))
+
+
 def test_description_and_email_length():
     brief = make_complete_brief(price=None)
     short = GeneratedCopy(

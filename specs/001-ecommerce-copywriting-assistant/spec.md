@@ -12,11 +12,11 @@
 
 ### Session 2026-08-09
 
-- Clarification scan completed against PROJECT_BRIEF §3–§4. No critical product-behavior ambiguities remain that require stakeholder choice.
-- Q: When readiness becomes ready mid-conversation, should copy generate automatically? → A: Yes — generate both artifacts immediately when the deterministic gate returns ready (unless the turn is only a contained meta/off-topic instruction with no readiness-advancing updates).
-- Q: After successful delivery, does a later correction auto-regenerate? → A: Yes — after state reduce + gate ready, regenerate (still subject to validation + one-repair budget per generation operation).
+- Clarification scan completed against PROJECT_BRIEF. No critical product-behavior ambiguities remain that require stakeholder choice.
+- Q: When readiness becomes ready mid-conversation via fact fill, should copy generate automatically? → A: No — ask for explicit confirmation (`ready_for_confirmation`); `REQUEST_GENERATION` / affirmative proceeds. Avoids spending tokens before the user can still edit.
+- Q: After successful delivery, does a later correction auto-regenerate? → A: Yes — after state reduce + gate ready + confirmation path, regenerate (still subject to validation + one-repair budget per generation operation).
 - Q: Should REQUEST_GENERATION while not ready force generation? → A: No — respond with the next deterministic follow-up; readiness remains deterministic.
-- Technology choices listed in PROJECT_BRIEF §4 are fixed and deferred to the plan phase (not reopened here).
+- Technology stack details live in the plan / delivered brief; product behavior here is binding.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -31,7 +31,7 @@ A store operator chats naturally about a product. The assistant gathers required
 **Acceptance Scenarios**:
 
 1. **Given** a new session, **When** the user provides partial product facts, **Then** the assistant extracts them into structured state and asks one concise follow-up for the next missing required field.
-2. **Given** all required fields are usable, **When** the readiness decision is ready, **Then** the system generates a product description (60–200 words) and a marketing email (subject ≤60 chars, body 80–250 words, non-empty CTA) in one generation operation.
+2. **Given** all required fields are usable and the user has confirmed generation (or issued `REQUEST_GENERATION`), **When** the system generates, **Then** it produces a product description (60–200 words) and a marketing email (subject ≤60 chars, body 80–250 words, non-empty CTA) in one generation operation.
 3. **Given** generated copy fails objective validation, **When** repair has not yet been used, **Then** the system performs exactly one automatic repair using the brief, previous output, and exact violations, then re-validates.
 4. **Given** repaired copy still fails validation, **When** presenting results, **Then** the system returns a visible validation-failure state and does not attempt another automatic repair.
 
@@ -63,8 +63,8 @@ The assistant must not invent precise facts from vague language, and must resist
 
 **Acceptance Scenarios**:
 
-1. **Given** the user says a product is “cheap”, **When** extraction runs, **Then** the system preserves raw text, marks price as vague, does not invent a number, and may ask one useful clarification for optional vague data.
-2. **Given** the user declines precision after one optional clarification, **When** continuing, **Then** the system records a documented assumption and continues without inventing a number (no infinite clarification loop).
+1. **Given** the user says a product is “cheap”, **When** extraction runs, **Then** the system preserves raw text, marks price as vague, does not invent a number, and asks for an exact price (price is required for readiness).
+2. **Given** optional fields (`category`, `brand_name`) are vague or missing, **When** the system has already prompted once (or the user explicitly requests generation), **Then** the system may record a documented assumption and continue without inventing values (no infinite clarification loop).
 3. **Given** legitimate product context exists, **When** the user attempts to override the assistant role or demand hidden prompts, **Then** no hidden prompt is revealed, purpose does not change, product state is not corrupted by the hostile instruction, and the assistant returns to the copywriting flow.
 
 ---
@@ -89,7 +89,8 @@ Operators and evaluators can see current structured product brief, field statuse
 
 - Explicit correction after successful copy delivery updates state and regenerates using new values without restarting the session.
 - Ambiguous contradiction on an optional field still requires clarification before treating that field as usable; required conflicts block readiness.
-- Vague optional field: at most one clarification attempt; then assume and continue.
+- Vague required field (e.g. price “cheap”): keep vague; block READY until an exact confirmed price exists.
+- Vague/missing optional field: at most one prompt; then assume/skip and continue.
 - Message mixes hostile meta-instruction with legitimate product facts: hostile intent is contained; safe product facts may still update state.
 - Generation readiness is never inferred from free-text model wording such as “I think we have enough.”
 - No meaningful confirmed key feature keeps the session not ready.
@@ -103,20 +104,20 @@ Operators and evaluators can see current structured product brief, field statuse
 - **FR-001**: Users MUST be able to provide product information over multiple natural-language chat turns in a web UI.
 - **FR-002**: After each relevant user turn, the system MUST extract newly supplied product facts into a typed structured delta (not a full replacement of canonical state).
 - **FR-003**: Application logic MUST merge extraction deltas into a canonical typed ProductBrief that is the source of truth for product data.
-- **FR-004**: Required fields before automatic generation are `product_name`, `key_features` (at least one meaningful item), `target_audience`, `tone`, and `price`.
-- **FR-005**: Optional fields `price`, `brand_name`, and `category` MUST be retained when supplied and reflected in generated content when relevant and usable.
+- **FR-004**: Required fields before generation are `product_name`, `key_features` (at least one meaningful item per `meaningful_features` in `gate.py`), `target_audience`, `tone`, and `price`.
+- **FR-005**: Optional fields `brand_name` and `category` MUST be retained when supplied and reflected in generated content when relevant and usable.
 - **FR-006**: Field uncertainty MUST be represented with at least statuses Missing, Vague, Confirmed, and Conflicted; only Confirmed fields count as usable for readiness.
 - **FR-007**: An explicit, inspectable readiness decision MUST be produced by deterministic application code with status `needs_info | needs_clarification | ready`, affected fields, and `next_field`.
 - **FR-008**: When not ready, the assistant MUST ask exactly one concise deterministic follow-up for the next prioritized missing/ambiguous field (or conflict comparison question).
 - **FR-009**: Explicit corrections MUST overwrite the canonical value immediately, append the previous value to history, avoid creating an unresolved conflict, and must not require a second confirmation.
 - **FR-010**: Ambiguous contradictions against a confirmed value MUST mark the field Conflicted, retain evidence of both values, block readiness until resolved for relevant required conflicts, and ask which value is correct.
 - **FR-011**: Vague values MUST preserve raw text, remain Vague, and MUST NOT be converted into fabricated precise facts (especially numeric prices).
-- **FR-012**: For optional vague data, the system MUST allow at most one clarification attempt; if the user declines precision, record a documented assumption and continue.
+- **FR-012**: For optional fields (`category`, `brand_name`), the system MUST allow at most one prompt; if still empty/vague, record a documented assumption (or skip on explicit generate) and continue. Required vague fields (including price) stay not-ready until confirmed.
 - **FR-013**: Prompt-injection / meta-instruction attempts MUST NOT reveal hidden prompts, change assistant purpose, or corrupt canonical state via the hostile instruction; safely separable product facts MAY still be extracted; flow returns to copywriting.
-- **FR-014**: When readiness is ready, the system MUST generate both a product description and a marketing email (subject, body, CTA) in one generation operation.
+- **FR-014**: After readiness is ready and generation is confirmed (or `REQUEST_GENERATION`), the system MUST generate both a product description and a marketing email (subject, body, CTA) in one generation operation. Fact-fill that first reaches READY MUST ask for confirmation rather than generating immediately.
 - **FR-015**: Product description length MUST be 60–200 words; email body 80–250 words; subject non-empty and ≤60 characters; email MUST include a CTA.
 - **FR-016**: Generated output MUST be validated before being treated as successful final copy.
-- **FR-017**: Validation MUST enforce: confirmed exact price presence in description and email body; length rules; CTA presence; subject rules; ≥70% coverage of normalized key features; rejection of obvious placeholders; ForbiddenClaims blacklist for unsupported high-risk claims.
+- **FR-017**: Validation MUST enforce: confirmed exact price presence in description and email body as a whole token (not a substring of a longer price); length rules; CTA presence; subject rules; ≥70% coverage of normalized key features; rejection of obvious placeholders; ForbiddenClaims blacklist for unsupported high-risk claims.
 - **FR-018**: On first validation failure, the system MUST perform exactly one automatic repair that receives brief, previous output, and exact violations; then re-validate.
 - **FR-019**: If repaired output still fails, the system MUST return a visible failed-validation state and MUST NOT perform another automatic repair.
 - **FR-020**: The session MUST remain editable after copy has been generated.
@@ -124,7 +125,7 @@ Operators and evaluators can see current structured product brief, field statuse
 - **FR-022**: The repository MUST include at least three difficult-user transcripts (contradiction, prompt injection, vague input) under demos, plus a root README of roughly one page covering architecture, trade-offs, local setup, and future improvements.
 - **FR-023**: Core extraction integration, reducer, readiness gate, validators, retry logic, and orchestration MUST be testable without network model calls via a deterministic fake/mock LLM, including generate/repair call-count assertions.
 - **FR-024**: Extractor intent classification MUST NOT decide whether generation is allowed; readiness remains deterministic application logic.
-- **FR-025**: Scope MUST exclude authentication, database persistence, RAG/vector DBs, runtime multi-agent frameworks, background jobs, production deployment infrastructure, and token streaming until required acceptance criteria are complete.
+- **FR-025**: Scope MUST exclude authentication, database servers, RAG/vector DBs, runtime multi-agent frameworks on the delivered `main` path, background jobs, and production deployment infrastructure. Token streaming via SSE is an implemented UX addition beyond the minimum architecture (validate still runs on complete artifacts). Local JSON session files are allowed as demo persistence (not a database).
 
 ### Key Entities
 
@@ -135,7 +136,7 @@ Operators and evaluators can see current structured product brief, field statuse
 - **GateDecision**: Deterministic readiness status, fields list, and next field.
 - **GeneratedCopy**: Product description plus marketing email (subject, body, CTA).
 - **Violation**: Structured validation failure with code, message, and artifact scope.
-- **Chat Session**: In-memory conversation plus canonical brief and last generation/validation metadata.
+- **Chat Session**: Conversation plus canonical brief and last generation/validation metadata; persisted as local JSON under `backend/.data/sessions/` (survives process reload; browser refresh starts a new session id).
 
 ## Success Criteria *(mandatory)*
 
@@ -156,9 +157,9 @@ Operators and evaluators can see current structured product brief, field statuse
 
 - Single local operator / evaluator; no multi-user auth or roles.
 - English product copy only for the prototype.
-- “Meaningful” key features means non-empty items of at least two characters after light normalization (trim/case), at least one confirmed item (`MIN_KEY_FEATURES` in `backend/app/domain/gate.py`). This relaxes PROJECT_BRIEF §3.2 / §5.10 / §11.2, which asked for two — changed on explicit user instruction because real product titles often carry only one distinguishing feature.
+- “Meaningful” key features: after trim, length ≥ 3 and ≥1 alphanumeric character; at least one confirmed item (`MIN_KEY_FEATURES` / `meaningful_features` in `backend/app/domain/gate.py`).
 - Feature coverage ≥70% uses simple normalized substring/token matching, not semantic embeddings.
-- In-memory sessions may be lost on process restart (documented trade-off).
+- Sessions are file-backed JSON (not a database); a browser refresh still starts a new session by minting a new id.
 - Optional fourth scenario (correction after delivery) is strongly recommended and included if time allows.
-- Stack and API shape are fixed in the technical plan phase and intentionally omitted from this product spec.
-- Clarification policy from PROJECT_BRIEF §4: decisions already fixed there are not reopened.
+- Stack details are in the plan / `PROJECT_BRIEF.md` (delivered-system note); product behavior here is binding.
+- Confirm-before-generate and required price are fixed product decisions (see clarifications / PROJECT_BRIEF).

@@ -18,7 +18,7 @@
 - [x] CHK005 Deterministic readiness decision shape (`needs_info | needs_clarification | ready`, fields, next_field) is specified (FR-007)
 - [x] CHK006 Spec forbids readiness decisions hidden in free-text LLM claims (SC-002 / Edge Cases)
 - [x] CHK007 Missing required info triggers concise follow-up (FR-008, FR-004)
-- [x] CHK008 Required fields and ≥2 key features rule are explicit (FR-004)
+- [x] CHK008 Required fields and ≥1 meaningful key feature rule are explicit (FR-004)
 
 ## Editable context, corrections, contradictions, vagueness
 

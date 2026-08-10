@@ -38,11 +38,11 @@
 | resolved | bool | Default false |
 
 ### ProductBrief
-Required fields (as FieldValue): `product_name`, `key_features`, `target_audience`, `tone`  
-Optional fields (as FieldValue): `category`, `price`, `brand_name`  
+Required fields (as FieldValue): `product_name`, `key_features`, `target_audience`, `tone`, `price`  
+Optional fields (as FieldValue): `category`, `brand_name`  
 Also: `assumptions: list[str]`, `conflicts: list[ConflictRecord]`, `version: int`
 
-**Usable field rule**: status MUST be `confirmed`. For `key_features`, confirmed list MUST contain ≥2 meaningful items.
+**Usable field rule**: status MUST be `confirmed`. For `key_features`, confirmed list MUST contain ≥ `MIN_KEY_FEATURES` (1) meaningful items (trim; length ≥ 3; ≥1 alphanumeric — see `meaningful_features` in `gate.py`).
 
 ### FieldUpdate (extraction delta item)
 | Field | Type | Notes |
@@ -83,7 +83,10 @@ Also: `assumptions: list[str]`, `conflicts: list[ConflictRecord]`, `version: int
 - `turn_number: int`
 - `last_copy: GeneratedCopy \| null`
 - `last_validation: ValidationResult \| null`
-- `clarified_vague_optionals: set[str]` (track one clarification attempt for optional vague fields)
+- `clarified_vague_optionals: set[str]`
+- `optional_fields_prompted: set[str]` (ask optional category/brand at most once)
+- `awaiting_generation_confirmation: bool`
+- Persistence: local JSON via `FileSessionStore` (`backend/.data/sessions/`)
 
 ### ValidationResult
 - `repaired: bool`
@@ -111,7 +114,7 @@ Also: `assumptions: list[str]`, `conflicts: list[ConflictRecord]`, `version: int
 
 ## Validation rules
 
-1. Confirmed exact price must appear in description and email body.
+1. Confirmed exact price must appear in description and email body as a **whole token** (e.g. `$49` does not match `$499`).
 2. Description word count 60–200.
 3. Email body word count 80–250.
 4. CTA non-empty.

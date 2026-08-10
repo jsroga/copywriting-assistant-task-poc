@@ -55,14 +55,27 @@ def visible_text(output: GeneratedCopy) -> str:
     )
 
 
+def price_token_in_text(price: str, text: str) -> bool:
+    """True when `price` appears as a whole token, not a substring of a longer price.
+
+    `$49` must not match `$499`. Boundaries are non-word on both sides so currency
+    symbols and punctuation still allow a match (e.g. `($49)`).
+    """
+    token = price.strip()
+    if not token:
+        return False
+    pattern = rf"(?<!\w){re.escape(token)}(?!\w)"
+    return re.search(pattern, text) is not None
+
+
 def validate_price_presence(output: GeneratedCopy, brief: ProductBrief) -> list[Violation]:
     if brief.price.status != FieldStatus.CONFIRMED or not brief.price.value:
         return []
     price = str(brief.price.value).strip()
     if not price:
         return []
-    in_description = price in output.product_description
-    in_email = price in strip_html(output.marketing_email.body)
+    in_description = price_token_in_text(price, output.product_description)
+    in_email = price_token_in_text(price, strip_html(output.marketing_email.body))
     if in_description and in_email:
         return []
     artifact: Literal["description", "email", "both"]

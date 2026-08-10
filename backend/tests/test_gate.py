@@ -40,11 +40,12 @@ def test_no_meaningful_key_features_not_ready():
     assert decision.status == GateStatus.NEEDS_INFO
     assert decision.next_field == "key_features"
 
-    # Single-character noise is not a meaningful feature.
-    brief = make_complete_brief(key_features=["x"])
-    decision = evaluate_readiness(brief)
-    assert decision.status == GateStatus.NEEDS_INFO
-    assert decision.next_field == "key_features"
+    # Short / filler noise is not a meaningful feature (see gate.meaningful_features).
+    for noise in (["x"], ["ok"], ["!!"]):
+        brief = make_complete_brief(key_features=noise)
+        decision = evaluate_readiness(brief)
+        assert decision.status == GateStatus.NEEDS_INFO
+        assert decision.next_field == "key_features"
 
 
 def test_unresolved_conflict_needs_clarification():
