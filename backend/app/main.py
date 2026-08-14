@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from app.llm.fake_client import FakeLLMClient
 from app.llm.openai_client import OpenAILLMClient, resolve_llm_credentials
-from app.llm.base import LLMClient
+from app.ports import LLMClient
 from app.orchestration import ConversationOrchestrator, TurnResponse, sse_frame
 from app.store import FileSessionStore, SessionStore
 

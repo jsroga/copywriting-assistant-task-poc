@@ -15,7 +15,7 @@ from app.domain.models import (
 )
 from app.domain.questions import build_question
 from app.domain.reducer import reduce_brief
-from app.llm.base import LLMClient
+from app.ports import LLMClient
 from app.orchestration.answer_guard import filter_invalid_asked_field_updates
 from app.orchestration.generation import CopyPipeline
 from app.orchestration.messages import (

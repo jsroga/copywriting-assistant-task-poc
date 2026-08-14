@@ -10,7 +10,7 @@ from app.domain.models import (
     Session,
     ValidationResult,
 )
-from app.llm.base import LLMClient
+from app.ports import LLMClient
 from app.orchestration.messages import (
     COPY_READY_AFTER_REPAIR_MESSAGE,
     COPY_READY_MESSAGE,
