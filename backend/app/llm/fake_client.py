@@ -182,11 +182,6 @@ class FakeLLMClient:
             return email
         return self._next_generated(brief, consume=False).marketing_email
 
-    def generate(self, brief: ProductBrief) -> GeneratedCopy:
-        self.generate_calls += 1
-        self.last_generate_brief = brief.model_copy(deep=True)
-        return self._next_generated(brief, consume=True)
-
     def repair(
         self,
         brief: ProductBrief,

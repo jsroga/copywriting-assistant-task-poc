@@ -101,7 +101,6 @@ class OpenAILLMClient:
         else:
             self._client = OpenAI(api_key=self.api_key)
         self._extract_prompt = _load_prompt("extract.md")
-        self._generate_prompt = _load_prompt("generate.md")
         self._generate_description_prompt = _load_prompt("generate_description.md")
         self._generate_email_prompt = _load_prompt("generate_email.md")
         self._generate_email_body_prompt = _load_prompt("generate_email_body.md")
@@ -245,23 +244,6 @@ class OpenAILLMClient:
             system=self._generate_email_prompt,
             user=json.dumps(user_payload),
             schema=MarketingEmail,
-        )
-
-    def generate(self, brief: ProductBrief) -> GeneratedCopy:
-        user_payload = {
-            "brief": _normalized_brief_payload(brief),
-            "requirements": {
-                "description_words": "60-200",
-                "email_body_words": "80-250",
-                "subject_max_chars": 60,
-                "email_body_format": "html",
-                "include_confirmed_price_in_description_and_email": True,
-            },
-        }
-        return self._parse(
-            system=self._generate_prompt,
-            user=json.dumps(user_payload),
-            schema=GeneratedCopy,
         )
 
     def repair(

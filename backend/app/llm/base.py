@@ -35,8 +35,6 @@ class LLMClient(Protocol):
         body: str | None = None,
     ) -> MarketingEmail: ...
 
-    def generate(self, brief: ProductBrief) -> GeneratedCopy: ...
-
     def repair(
         self,
         brief: ProductBrief,
