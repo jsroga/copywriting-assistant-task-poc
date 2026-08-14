@@ -102,7 +102,6 @@ class OpenAILLMClient:
             self._client = OpenAI(api_key=self.api_key)
         self._extract_prompt = _load_prompt("extract.md")
         self._generate_description_prompt = _load_prompt("generate_description.md")
-        self._generate_email_prompt = _load_prompt("generate_email.md")
         self._generate_email_body_prompt = _load_prompt("generate_email_body.md")
         self._generate_email_meta_prompt = _load_prompt("generate_email_meta.md")
         self._repair_prompt = _load_prompt("repair.md")
@@ -213,38 +212,21 @@ class OpenAILLMClient:
         brief: ProductBrief,
         product_description: str,
         *,
-        body: str | None = None,
+        body: str,
     ) -> MarketingEmail:
-        if body is not None:
-            meta = self._parse(
-                system=self._generate_email_meta_prompt,
-                user=json.dumps(
-                    {
-                        "brief": _normalized_brief_payload(brief),
-                        "product_description": product_description,
-                        "email_body_html": body,
-                        "requirements": {"subject_max_chars": 60},
-                    }
-                ),
-                schema=MarketingEmailMeta,
-            )
-            return MarketingEmail(subject=meta.subject, body=body, cta=meta.cta)
-
-        user_payload = {
-            "brief": _normalized_brief_payload(brief),
-            "product_description": product_description,
-            "requirements": {
-                "email_body_words": "80-250",
-                "subject_max_chars": 60,
-                "body_format": "html",
-                "include_confirmed_price": True,
-            },
-        }
-        return self._parse(
-            system=self._generate_email_prompt,
-            user=json.dumps(user_payload),
-            schema=MarketingEmail,
+        meta = self._parse(
+            system=self._generate_email_meta_prompt,
+            user=json.dumps(
+                {
+                    "brief": _normalized_brief_payload(brief),
+                    "product_description": product_description,
+                    "email_body_html": body,
+                    "requirements": {"subject_max_chars": 60},
+                }
+            ),
+            schema=MarketingEmailMeta,
         )
+        return MarketingEmail(subject=meta.subject, body=body, cta=meta.cta)
 
     def repair(
         self,

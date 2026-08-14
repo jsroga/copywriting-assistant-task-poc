@@ -167,10 +167,10 @@ class FakeLLMClient:
         brief: ProductBrief,
         product_description: str,
         *,
-        body: str | None = None,
+        body: str,
     ) -> MarketingEmail:
         del product_description
-        if body is not None and self._email_body_cache is not None:
+        if self._email_body_cache is not None:
             email = self._email_body_cache.model_copy(deep=True)
             email.body = body
             self._email_body_cache = None

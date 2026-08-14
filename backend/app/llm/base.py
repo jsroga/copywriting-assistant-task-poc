@@ -32,7 +32,7 @@ class LLMClient(Protocol):
         brief: ProductBrief,
         product_description: str,
         *,
-        body: str | None = None,
+        body: str,
     ) -> MarketingEmail: ...
 
     def repair(
