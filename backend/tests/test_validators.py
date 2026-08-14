@@ -6,8 +6,8 @@ from app.domain.models import (
     ViolationCode,
 )
 from app.llm.fake_client import make_complete_brief, make_valid_copy
-from app.validation.base import validate
-from app.validation.rules import word_count
+from app.domain.validation.base import validate
+from app.domain.validation.rules import word_count
 
 
 def _pad(text: str, min_words: int) -> str:

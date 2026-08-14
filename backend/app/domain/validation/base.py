@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from app.domain.models import GeneratedCopy, ProductBrief, Violation
-from app.validation import rules
+from app.domain.validation import rules
 
 Validator = Callable[[GeneratedCopy, ProductBrief], list[Violation]]
 
