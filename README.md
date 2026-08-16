@@ -1,10 +1,10 @@
 # AI-Powered E-Commerce Copywriting Assistant
 
+![System architecture: deterministic core with replaceable edges](architecture.png)
+
 Conversational take-home prototype: gather product facts into a typed `ProductBrief`, ask deterministic follow-ups, confirm, then generate a validated product description and marketing email with at most one automatic repair. The web UI is a thin demo — interface polish is not the deliverable.
 
 ## Architecture
-
-![System architecture: deterministic core with replaceable edges](architecture.svg)
 
 Inbound adapters (Next.js + assistant-ui, FastAPI SSE) call the application core. The core depends on nothing outside itself. Outbound adapters implement ports declared by the core (`LLMClient`, `SessionStore`). Two interchangeable turn harnesses share the same domain: a hand-written orchestrator on `main`, a Strands Agents harness on `feat/strands`.
 
