@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 630" width="960" height="630" role="img" aria-labelledby="t d">
+  <title id="t">System architecture: deterministic core with replaceable edges</title>
+  <desc id="d">Inbound adapters call the application core. The core depends on nothing outside itself. Outbound adapters implement ports declared by the core. Two interchangeable orchestration implementations share the same domain.</desc>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#6B7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .h  { font: 600 18px Inter, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif; fill: #111827 }
+      .sh { font: 400 12.5px Inter, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif; fill: #6B7280 }
+      .band { font: 600 10px Inter, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #6B7280; letter-spacing: .14em }
+      .bandn { font: 400 10px Inter, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #9CA3AF; letter-spacing: .04em }
+      .box { font: 400 12px Inter, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #111827 }
+      .mono { font: 400 10.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #6B7280 }
+      .port { font: 600 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #FFFFFF; letter-spacing: .06em }
+      .lg { font: 400 11px Inter, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #6B7280 }
+      .rail { font: 600 10px Inter, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #0F766E; letter-spacing: .14em }
+    </style>
+  </defs>
+
+  <rect width="960" height="630" fill="#FFFFFF"/>
+
+  <text class="h" x="40" y="42">AI Copywriting Assistant — architecture</text>
+  <text class="sh" x="40" y="64">Deterministic core, replaceable edges. The language model reads and writes text; it never controls flow.</text>
+
+  <!-- INBOUND -->
+  <rect x="40" y="94" width="740" height="74" rx="10" fill="#F9FAFB" stroke="#E5E7EB"/>
+  <text class="band" x="60" y="116">INBOUND ADAPTERS</text>
+  <text class="bandn" x="240" y="116">driving side — translate transport into application calls</text>
+  <rect x="60" y="126" width="330" height="30" rx="6" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <text class="box" x="225" y="141" text-anchor="middle" dominant-baseline="central">Web client · Next.js, assistant-ui</text>
+  <rect x="410" y="126" width="350" height="30" rx="6" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <text class="box" x="585" y="141" text-anchor="middle" dominant-baseline="central">HTTP API · FastAPI, server-sent events</text>
+
+  <line x1="410" y1="168" x2="410" y2="190" stroke="#6B7280" stroke-width="1.4" marker-end="url(#a)"/>
+
+  <!-- CORE -->
+  <rect x="40" y="194" width="740" height="258" rx="10" fill="#F9FAFB" stroke="#E5E7EB"/>
+  <text class="band" x="60" y="216">APPLICATION CORE</text>
+  <text class="bandn" x="240" y="216">no framework, no vendor, no I/O</text>
+
+  <text class="mono" x="60" y="240">turn orchestration — two interchangeable implementations</text>
+
+  <rect x="60" y="250" width="340" height="70" rx="8" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <text class="box" x="230" y="272" text-anchor="middle" dominant-baseline="central">Hand-written orchestrator</text>
+  <text class="mono" x="230" y="292" text-anchor="middle" dominant-baseline="central">branch main · orchestration/</text>
+  <text class="mono" x="230" y="307" text-anchor="middle" dominant-baseline="central">explicit control flow, fully auditable</text>
+
+  <rect x="420" y="250" width="340" height="70" rx="8" fill="#FFFFFF" stroke="#D1D5DB" stroke-dasharray="5 4"/>
+  <text class="box" x="590" y="272" text-anchor="middle" dominant-baseline="central">Agent harness · Strands</text>
+  <text class="mono" x="590" y="292" text-anchor="middle" dominant-baseline="central">branch feat/strands · strands_runtime/</text>
+  <text class="mono" x="590" y="307" text-anchor="middle" dominant-baseline="central">tools + policy + lifecycle guard hooks</text>
+
+  <line x1="230" y1="320" x2="230" y2="344" stroke="#6B7280" stroke-width="1.4" marker-end="url(#a)"/>
+  <line x1="590" y1="320" x2="590" y2="344" stroke="#6B7280" stroke-width="1.4" marker-end="url(#a)"/>
+
+  <rect x="60" y="348" width="700" height="88" rx="8" fill="#F0FDFA" stroke="#0F766E"/>
+  <text class="box" x="76" y="370" dominant-baseline="central" font-weight="600" fill="#0F766E">Domain — pure functions, unit-tested without a model</text>
+  <rect x="76" y="386" width="128" height="34" rx="5" fill="#FFFFFF" stroke="#99F6E4"/>
+  <text class="box" x="140" y="403" text-anchor="middle" dominant-baseline="central">Brief &amp; field state</text>
+  <rect x="214" y="386" width="128" height="34" rx="5" fill="#FFFFFF" stroke="#99F6E4"/>
+  <text class="box" x="278" y="403" text-anchor="middle" dominant-baseline="central">Merge (reducer)</text>
+  <rect x="352" y="386" width="128" height="34" rx="5" fill="#FFFFFF" stroke="#99F6E4"/>
+  <text class="box" x="416" y="403" text-anchor="middle" dominant-baseline="central">Readiness gate</text>
+  <rect x="490" y="386" width="128" height="34" rx="5" fill="#FFFFFF" stroke="#99F6E4"/>
+  <text class="box" x="554" y="403" text-anchor="middle" dominant-baseline="central">Question policy</text>
+  <rect x="628" y="386" width="128" height="34" rx="5" fill="#FFFFFF" stroke="#99F6E4"/>
+  <text class="box" x="692" y="403" text-anchor="middle" dominant-baseline="central">Output validation</text>
+
+  <!-- PORTS -->
+  <rect x="230" y="464" width="360" height="30" rx="6" fill="#0F766E"/>
+  <text class="port" x="410" y="480" text-anchor="middle" dominant-baseline="central" fill="#FFFFFF">PORTS · LLMClient · SessionStore</text>
+  <line x1="410" y1="452" x2="410" y2="462" stroke="#6B7280" stroke-width="1.4"/>
+  <line x1="410" y1="494" x2="410" y2="514" stroke="#6B7280" stroke-width="1.4" marker-end="url(#a)"/>
+
+  <!-- OUTBOUND -->
+  <rect x="40" y="518" width="740" height="76" rx="10" fill="#F9FAFB" stroke="#E5E7EB"/>
+  <text class="band" x="60" y="540">OUTBOUND ADAPTERS</text>
+  <text class="bandn" x="240" y="540">driven side — implement the ports, swappable without touching the core</text>
+  <rect x="60" y="550" width="230" height="30" rx="6" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <text class="box" x="175" y="565" text-anchor="middle" dominant-baseline="central">OpenAI-compatible client</text>
+  <rect x="300" y="550" width="200" height="30" rx="6" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <text class="box" x="400" y="565" text-anchor="middle" dominant-baseline="central">Deterministic test double</text>
+  <rect x="510" y="550" width="250" height="30" rx="6" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <text class="box" x="635" y="565" text-anchor="middle" dominant-baseline="central">Session store · memory or file</text>
+
+  <!-- DEPENDENCY RAIL -->
+  <line x1="880" y1="580" x2="880" y2="120" stroke="#0F766E" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ai)"/>
+  <text class="rail" x="880" y="350" text-anchor="middle" transform="rotate(-90 880 350)">SOURCE DEPENDENCIES POINT INWARD</text>
+
+  <text class="lg" x="40" y="616">Solid outline: branch main   ·   Dashed outline: branch feat/strands   ·   Domain, validation and adapters are identical on both branches</text>
+</svg>
