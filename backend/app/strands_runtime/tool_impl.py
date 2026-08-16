@@ -228,7 +228,7 @@ def run_generate_copy(ctx: TurnContext) -> dict:
         raise RuntimeError("generate_copy requires ingest first")
     session = ctx.session
     from app.domain.models import GeneratedCopy, ValidationResult
-    from app.domain.validation.base import validate
+    from app.domain.validation import validate
 
     ctx.emit("validation_status", {"phase": "generating"})
     chunks: list[str] = []
@@ -344,7 +344,7 @@ def _fail_copy(ctx, gate, copy, validation):
 
 def run_repair_copy(ctx: TurnContext) -> dict:
     from app.domain.models import ValidationResult
-    from app.domain.validation.base import validate
+    from app.domain.validation import validate
 
     gate = ctx.gate
     if gate is None or ctx.pending_copy is None:

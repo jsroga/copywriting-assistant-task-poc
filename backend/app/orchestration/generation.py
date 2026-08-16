@@ -18,7 +18,7 @@ from app.orchestration.messages import (
 )
 from app.orchestration.responses import ResponseType, TurnResponse, serialize_brief
 from app.store import SessionStore
-from app.domain.validation.base import validate
+from app.domain.validation import validate
 
 
 class CopyPipeline:

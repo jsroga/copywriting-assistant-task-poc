@@ -12,7 +12,10 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.llm.fake_client import FakeLLMClient
-from app.llm.openai_client import OpenAILLMClient, resolve_llm_credentials
+from app.llm.openai_compatible_client import (
+    OpenAICompatibleLLMClient,
+    resolve_llm_credentials,
+)
 from app.ports import LLMClient
 from app.orchestration import ConversationOrchestrator, TurnResponse, sse_frame
 from app.store import FileSessionStore, SessionStore
@@ -46,7 +49,9 @@ def build_llm() -> LLMClient:
     api_key, base_url, model = resolve_llm_credentials()
     if not api_key or api_key.startswith("sk-your-key"):
         return FakeLLMClient()
-    return OpenAILLMClient(api_key=api_key, base_url=base_url or None, model=model)
+    return OpenAICompatibleLLMClient(
+        api_key=api_key, base_url=base_url or None, model=model
+    )
 
 
 llm = build_llm()

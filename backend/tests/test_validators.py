@@ -1,11 +1,12 @@
 from app.domain.models import (
     GeneratedCopy,
     MarketingEmail,
+    Violation,
     ViolationCode,
 )
 from app.llm.fake_client import make_complete_brief, make_valid_copy
-from app.domain.validation.base import validate
-from app.domain.validation.rules import word_count
+from app.domain.validation import validate
+from app.domain.validation.text import word_count
 
 
 def _pad(text: str, min_words: int) -> str:
@@ -77,3 +78,38 @@ def test_placeholder_detection():
     copy = make_valid_copy(brief)
     copy.product_description = _pad("Intro [TODO] " + copy.product_description, 60)
     assert any(v.code == ViolationCode.PLACEHOLDER_TEXT for v in validate(copy, brief))
+
+
+def test_validate_uses_injected_chain_in_order():
+    brief = make_complete_brief(price=None)
+    copy = GeneratedCopy(
+        product_description="Too short",
+        marketing_email=MarketingEmail(subject="Hi", body="Short", cta="Buy"),
+    )
+
+    def first(_output: GeneratedCopy, _brief) -> list[Violation]:
+        return [
+            Violation(
+                code=ViolationCode.MISSING_CTA,
+                message="first",
+                artifact="email",
+            )
+        ]
+
+    def second(_output: GeneratedCopy, _brief) -> list[Violation]:
+        return [
+            Violation(
+                code=ViolationCode.MISSING_PRICE,
+                message="second",
+                artifact="description",
+            )
+        ]
+
+    violations = validate(copy, brief, validators=[first, second])
+    assert [v.message for v in violations] == ["first", "second"]
+    assert [v.code for v in violations] == [
+        ViolationCode.MISSING_CTA,
+        ViolationCode.MISSING_PRICE,
+    ]
+    assert ViolationCode.DESCRIPTION_LENGTH not in {v.code for v in violations}
+    assert ViolationCode.EMAIL_LENGTH not in {v.code for v in violations}

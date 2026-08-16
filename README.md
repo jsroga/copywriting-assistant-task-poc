@@ -60,7 +60,7 @@ Same domain, validators, and `LLMClient`. The turn is a Strands agent with tools
 
 | File | Role |
 |------|------|
-| `openai_client.py` | OpenAI-compatible client (OpenRouter by default, `kimi-k3`); credential resolution, prompt load, brief → confirmed/vague facts |
+| `openai_compatible_client.py` | OpenAI-compatible client (OpenRouter by default, `kimi-k3`); credential resolution, prompt load, brief → confirmed/vague facts |
 | `fake_client.py` | Deterministic double so the full flow runs without a network |
 | `json_utils.py` | Extract and parse JSON from model text |
 | `prompts/extract.md` | Intent + field-update extraction |

@@ -24,7 +24,7 @@ from app.llm.fake_client import (
 )
 from app.orchestration import ConversationOrchestrator
 from app.store import SessionStore
-from app.domain.validation.base import validate
+from app.domain.validation import validate
 
 
 def _orch(llm: FakeLLMClient, store: SessionStore | None = None) -> ConversationOrchestrator:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from strands.models.openai import OpenAIModel
 
-from app.llm.openai_client import resolve_llm_credentials
+from app.llm.openai_compatible_client import resolve_llm_credentials
 
 DEFAULT_STRANDS_MODEL = "gpt-4o-mini"
 

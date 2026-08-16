@@ -38,7 +38,7 @@ Build a conversational e-commerce copywriting assistant where a Strands Agents S
 |-----------|--------|-------|
 | I. Deterministic control flow | PASS | Strands harness + deterministic tools/hooks own reduce/gate/validate/repair budget |
 | II. Structured state source of truth | PASS | Typed ProductBrief; generator uses normalized brief |
-| III. Mockable LLM boundaries | PASS | LLMClient + FakeLLMClient + OpenAILLMClient inside tools |
+| III. Mockable LLM boundaries | PASS | LLMClient + FakeLLMClient + OpenAICompatibleLLMClient inside tools |
 | IV. Explicit uncertainty | PASS | MISSING/VAGUE/CONFIRMED/CONFLICTED |
 | V. Bounded generation repair | PASS | Exactly one automatic repair |
 | VI. Scope discipline | PASS | No DB/auth/RAG/multi-agent swarms; Strands single agent allowed |
@@ -91,7 +91,7 @@ specs/001-ecommerce-copywriting-assistant/
 │   │   │   └── questions.py
 │   │   ├── llm/
 │   │   │   ├── base.py
-│   │   │   ├── openai_client.py
+│   │   │   ├── openai_compatible_client.py
 │   │   │   ├── fake_client.py
 │   │   │   ├── json_utils.py
 │   │   │   └── prompts/

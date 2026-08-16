@@ -86,12 +86,17 @@ def _answer_for(gate: dict, assistant_message: str) -> str:
 def live_llm():
     if not _has_live_key():
         pytest.skip("No OPENROUTER_API_KEY / OPENAI_API_KEY configured for live tests")
-    from app.llm.openai_client import OpenAILLMClient, resolve_llm_credentials
+    from app.llm.openai_compatible_client import (
+        OpenAICompatibleLLMClient,
+        resolve_llm_credentials,
+    )
 
     api_key, base_url, model = resolve_llm_credentials()
     assert api_key
     _log(f"\n[e2e] model={model} base_url={base_url}")
-    return OpenAILLMClient(api_key=api_key, base_url=base_url or None, model=model)
+    return OpenAICompatibleLLMClient(
+        api_key=api_key, base_url=base_url or None, model=model
+    )
 
 
 def test_imba_seat_full_flow_with_llm_judge(live_llm) -> None:

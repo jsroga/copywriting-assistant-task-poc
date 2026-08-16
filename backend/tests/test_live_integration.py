@@ -42,7 +42,7 @@ pytestmark = pytest.mark.integration
 def live_creds() -> tuple[str, str, str]:
     if not _has_live_key():
         pytest.skip("No OPENROUTER_API_KEY / OPENAI_API_KEY configured for live tests")
-    from app.llm.openai_client import resolve_llm_credentials
+    from app.llm.openai_compatible_client import resolve_llm_credentials
 
     api_key, base_url, model = resolve_llm_credentials()
     assert api_key
@@ -53,11 +53,13 @@ def live_creds() -> tuple[str, str, str]:
 @pytest.fixture(scope="module")
 def live_client(live_creds: tuple[str, str, str]) -> TestClient:
     api_key, base_url, model = live_creds
-    from app.llm.openai_client import OpenAILLMClient
+    from app.llm.openai_compatible_client import OpenAICompatibleLLMClient
     from app.main import app, override_llm, reset_store
 
     override_llm(
-        OpenAILLMClient(api_key=api_key, base_url=base_url or None, model=model)
+        OpenAICompatibleLLMClient(
+            api_key=api_key, base_url=base_url or None, model=model
+        )
     )
     reset_store()
     return TestClient(app)

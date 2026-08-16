@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from app.domain.models import GeneratedCopy, ProductBrief, Violation
-from .engine import validate as run_validators
-from .registry import DEFAULT_VALIDATORS
 from .types import Validator
 
 
@@ -11,8 +9,8 @@ def validate(
     brief: ProductBrief,
     validators: list[Validator] | None = None,
 ) -> list[Violation]:
-    chain = validators if validators is not None else DEFAULT_VALIDATORS
-    return run_validators(output, brief, chain)
-
-
-__all__ = ["validate", "Validator", "DEFAULT_VALIDATORS"]
+    chain = validators if validators is not None else []
+    violations: list[Violation] = []
+    for validator in chain:
+        violations.extend(validator(output, brief))
+    return violations

@@ -75,7 +75,7 @@ def resolve_llm_credentials() -> tuple[str | None, str, str]:
     )
 
 
-class OpenAILLMClient:
+class OpenAICompatibleLLMClient:
     """OpenAI-compatible Structured Outputs client (OpenAI or OpenRouter)."""
 
     def __init__(
@@ -92,7 +92,7 @@ class OpenAILLMClient:
         self.base_url = base_url if base_url is not None else resolved_base
         if not self.api_key and client is None:
             raise RuntimeError(
-                "OPENROUTER_API_KEY or OPENAI_API_KEY is required for OpenAILLMClient"
+                "OPENROUTER_API_KEY or OPENAI_API_KEY is required for OpenAICompatibleLLMClient"
             )
         if client is not None:
             self._client = client
