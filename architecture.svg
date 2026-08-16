@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 630" width="960" height="630" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 694" width="1024" height="694" role="img" aria-labelledby="t d">
   <title id="t">System architecture: deterministic core with replaceable edges</title>
   <desc id="d">Inbound adapters call the application core. The core depends on nothing outside itself. Outbound adapters implement ports declared by the core. Two interchangeable orchestration implementations share the same domain.</desc>
 
@@ -22,7 +22,8 @@
     </style>
   </defs>
 
-  <rect width="960" height="630" fill="#FFFFFF"/>
+  <rect width="1024" height="694" fill="#FFFFFF"/>
+  <g transform="translate(32, 32)">
 
   <text class="h" x="40" y="42">AI Copywriting Assistant — architecture</text>
   <text class="sh" x="40" y="64">Deterministic core, replaceable edges. The language model reads and writes text; it never controls flow.</text>
@@ -93,4 +94,5 @@
   <text class="rail" x="880" y="350" text-anchor="middle" transform="rotate(-90 880 350)">SOURCE DEPENDENCIES POINT INWARD</text>
 
   <text class="lg" x="40" y="616">Solid outline: branch main   ·   Dashed outline: branch feat/strands   ·   Domain, validation and adapters are identical on both branches</text>
+  </g>
 </svg>
