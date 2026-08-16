@@ -47,3 +47,6 @@ backend/.data/
 
 # Cursor local junk (keep rules/agents/skills/hooks tracked)
 .cursor/**/.DS_Store
+
+# Private local notes (not a deliverable)
+.local/
