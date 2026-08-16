@@ -3,7 +3,7 @@ from __future__ import annotations
 from strands import Agent
 
 from app.llm.fake_client import FakeLLMClient
-from app.llm.base import LLMClient
+from app.ports import LLMClient
 from app.strands_runtime.context import TurnContext
 from app.strands_runtime.hooks import TurnGuardHooks, TurnSteering
 from app.strands_runtime.model import build_openai_model

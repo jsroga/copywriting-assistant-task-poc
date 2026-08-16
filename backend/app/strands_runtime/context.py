@@ -13,7 +13,7 @@ from app.domain.models import (
     Session,
     Violation,
 )
-from app.llm.base import LLMClient
+from app.ports import LLMClient
 from app.orchestration.responses import TurnResponse
 from app.store import SessionStore
 

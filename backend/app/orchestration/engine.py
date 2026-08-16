@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Any
 
-from app.llm.base import LLMClient
+from app.ports import LLMClient
 from app.orchestration.responses import TurnResponse
 from app.store import SessionStore
 from app.strands_runtime.bridge import StrandsTurnBridge

@@ -7,7 +7,7 @@ from threading import Thread
 from typing import Any
 
 from app.domain.models import ChatMessage
-from app.llm.base import LLMClient
+from app.ports import LLMClient
 from app.orchestration.responses import TERMINAL_EVENTS, TurnResponse
 from app.store import SessionStore
 from app.strands_runtime.agent_factory import build_turn_agent
