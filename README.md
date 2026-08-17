@@ -1,6 +1,6 @@
 # AI-Powered E-Commerce Copywriting Assistant
 
-![System architecture: deterministic core with replaceable edges](architecture.png)
+![System architecture: deterministic core with replaceable edges](architecture.svg)
 
 Conversational take-home prototype: gather product facts into a typed `ProductBrief`, ask deterministic follow-ups, confirm, then generate a validated product description and marketing email with at most one automatic repair. The web UI is a thin demo — interface polish is not the deliverable.
 
