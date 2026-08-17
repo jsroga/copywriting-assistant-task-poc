@@ -3,9 +3,7 @@ from __future__ import annotations
 import re
 from typing import Literal
 
-from app.domain.gate import meaningful_features
 from app.domain.models import (
-    BRIEF_FIELDS,
     FieldStatus,
     GeneratedCopy,
     ProductBrief,
@@ -23,13 +21,6 @@ PLACEHOLDER_PATTERNS = (
     r"\[TODO\]",
     r"\{\{product_name\}\}",
     r"lorem ipsum",
-)
-
-FORBIDDEN_CLAIMS = (
-    "fda approved",
-    "clinically proven",
-    "guaranteed results",
-    "#1",
 )
 
 
@@ -167,42 +158,6 @@ def validate_subject(output: GeneratedCopy, brief: ProductBrief) -> list[Violati
     ]
 
 
-def _feature_covered(feature: str, text: str) -> bool:
-    normalized = re.sub(r"\s+", " ", feature.strip().lower())
-    haystack = text.lower()
-    if normalized and normalized in haystack:
-        return True
-    words = [w for w in re.split(r"\W+", normalized) if len(w) > 2]
-    if not words:
-        return bool(normalized) and normalized in haystack
-    hits = sum(1 for word in words if word in haystack)
-    return (hits / len(words)) >= 0.5
-
-
-def validate_feature_coverage(
-    output: GeneratedCopy, brief: ProductBrief
-) -> list[Violation]:
-    features = meaningful_features(brief.key_features.value)
-    if not features:
-        return []
-    covered = sum(
-        1 for feature in features if _feature_covered(feature, output.product_description)
-    )
-    ratio = covered / len(features)
-    if ratio >= 0.7:
-        return []
-    return [
-        Violation(
-            code=ViolationCode.FEATURE_COVERAGE,
-            message=(
-                f"Product description covers {covered}/{len(features)} "
-                f"key features ({ratio:.0%}); need at least 70%"
-            ),
-            artifact="description",
-        )
-    ]
-
-
 def validate_placeholders(output: GeneratedCopy, brief: ProductBrief) -> list[Violation]:
     del brief
     blob = visible_text(output)
@@ -216,37 +171,3 @@ def validate_placeholders(output: GeneratedCopy, brief: ProductBrief) -> list[Vi
                 )
             ]
     return []
-
-
-def _brief_text_blob(brief: ProductBrief) -> str:
-    parts: list[str] = []
-    for name in BRIEF_FIELDS:
-        field = getattr(brief, name)
-        if field.value is None:
-            continue
-        if isinstance(field.value, list):
-            parts.extend(str(v) for v in field.value)
-        else:
-            parts.append(str(field.value))
-        if field.raw_text:
-            parts.append(field.raw_text)
-    parts.extend(brief.assumptions)
-    return " ".join(parts).lower()
-
-
-def validate_forbidden_claims(
-    output: GeneratedCopy, brief: ProductBrief
-) -> list[Violation]:
-    blob = visible_text(output).lower()
-    supported = _brief_text_blob(brief)
-    violations: list[Violation] = []
-    for claim in FORBIDDEN_CLAIMS:
-        if claim in blob and claim not in supported:
-            violations.append(
-                Violation(
-                    code=ViolationCode.FORBIDDEN_CLAIM,
-                    message=f"Unsupported claim detected: {claim}",
-                    artifact="both",
-                )
-            )
-    return violations

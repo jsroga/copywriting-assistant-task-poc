@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from typing import cast
 
 from app.domain.gate import meaningful_features
@@ -12,37 +11,20 @@ from app.domain.models import (
     Session,
 )
 
-# Confirmed prices need a numeral or currency marker — "premium" is not a price.
-_PRICE_CONFIRMED_RE = re.compile(
-    r"\d|(?:pln|usd|eur|gbp|zł)\b|[$€£]",
-    re.IGNORECASE,
-)
-# Qualitative price language may stay vague; unrelated words must not.
-_PRICE_VAGUE_RE = re.compile(
-    r"\b("
-    r"cheap|cheaper|cheapest|expensive|affordable|budget|pricey|"
-    r"inexpensive|costly|reasonable|low[\s-]?cost|high[\s-]?end|"
-    r"around|about|approximately|roughly|starting|from"
-    r")\b",
-    re.IGNORECASE,
-)
 
-
-def _price_text(update: FieldUpdate) -> str:
-    if update.status == "confirmed" and update.value is not None:
-        if isinstance(update.value, list):
-            return " ".join(str(item) for item in update.value)
-        return str(update.value)
-    return update.raw_text or ""
+def _non_empty_text(value: str | list[str] | None) -> bool:
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, list):
+        return any(str(item).strip() for item in value)
+    return False
 
 
 def _is_acceptable_price(update: FieldUpdate) -> bool:
-    text = _price_text(update).strip()
-    if not text:
-        return False
+    """Accept structured extractor output; do not re-parse natural-language meaning."""
     if update.status == "confirmed":
-        return _PRICE_CONFIRMED_RE.search(text) is not None
-    return _PRICE_VAGUE_RE.search(text) is not None
+        return _non_empty_text(update.value)
+    return bool((update.raw_text or "").strip())
 
 
 def _is_acceptable_answer(field: BriefFieldName, update: FieldUpdate) -> bool:

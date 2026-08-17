@@ -87,6 +87,48 @@ def test_vague_value_remains_vague():
     assert result.version == 1
 
 
+def test_qualitative_price_updates_stay_vague_regardless_of_wording():
+    """Domain stores extractor status; it does not classify English price language."""
+    for raw_text in (
+        "cheap",
+        "premium priced",
+        "entry-level pricing",
+        "around fifty euros",
+        "between 40 and 60 EUR",
+        "I don't know the price",
+    ):
+        brief = ProductBrief()
+        extraction = ExtractionResult(
+            intent=Intent.PROVIDE_INFO,
+            updates=[
+                FieldUpdate(
+                    field="price",
+                    value=None,
+                    raw_text=raw_text,
+                    status="vague",
+                )
+            ],
+        )
+        result = reduce_brief(brief, extraction, turn_number=1)
+        assert result.price.status == FieldStatus.VAGUE
+        assert result.price.value is None
+        assert result.price.raw_text == raw_text
+
+
+def test_confirmed_exact_price_is_stored():
+    brief = ProductBrief()
+    extraction = ExtractionResult(
+        intent=Intent.PROVIDE_INFO,
+        updates=[
+            FieldUpdate(field="price", value="€49", status="confirmed"),
+        ],
+    )
+    result = reduce_brief(brief, extraction, turn_number=1)
+    assert result.price.status == FieldStatus.CONFIRMED
+    assert result.price.value == "€49"
+
+
+
 def test_version_unchanged_when_same_confirmed_value():
     brief = ProductBrief(
         product_name=FieldValue(value="AquaPure", status=FieldStatus.CONFIRMED),

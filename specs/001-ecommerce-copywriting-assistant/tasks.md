@@ -54,7 +54,7 @@
 
 ### Validation & LLM boundary
 
-- [x] T015 [US1] Implement violation models + `validate()` chain in `backend/app/validation/base.py` and `backend/app/validation/rules.py` (price, lengths, CTA, subject, feature coverage, placeholders, ForbiddenClaims)
+- [x] T015 [US1] Implement violation models + `validate()` chain in `backend/app/domain/validation/base.py` and `backend/app/domain/validation/rules.py` (price, lengths, CTA, subject, placeholders)
 - [x] T016 [US1] Unit tests for validators in `backend/tests/test_validators.py` covering PROJECT_BRIEF §11.3
 - [x] T017 [P] [US1] Define `LLMClient` protocol in `backend/app/llm/base.py`
 - [x] T018 [P] [US1] Implement `FakeLLMClient` in `backend/app/llm/fake_client.py` with call counters

@@ -27,6 +27,19 @@ def test_vague_required_not_usable():
     assert decision.next_field == "target_audience"
 
 
+def test_vague_price_does_not_satisfy_readiness():
+    """Qualitative price is not ready: gate reads FieldStatus, not raw_text wording."""
+    brief = make_complete_brief(price=None)
+    brief.price = FieldValue(value=None, raw_text="cheap", status=FieldStatus.VAGUE)
+    decision = evaluate_readiness(
+        brief, optional_fields_prompted={"category", "brand_name"}
+    )
+    assert decision.status == GateStatus.NEEDS_INFO
+    assert decision.next_field == "price"
+    assert brief.price.value is None
+
+
+
 def test_single_key_feature_is_enough_to_be_ready():
     brief = make_complete_brief(key_features=["only one"])
     decision = evaluate_readiness(brief)

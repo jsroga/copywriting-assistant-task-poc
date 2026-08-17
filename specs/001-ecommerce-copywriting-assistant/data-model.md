@@ -15,7 +15,7 @@
 - `needs_info` | `needs_clarification` | `ready`
 
 ### ViolationCode
-- `missing_price` | `description_length` | `email_length` | `missing_cta` | `subject_too_long` | `feature_coverage` | `placeholder_text` | `forbidden_claim`
+- `missing_price` | `description_length` | `email_length` | `missing_cta` | `subject_too_long` | `placeholder_text`
 
 ## Entities
 
@@ -119,6 +119,4 @@ Also: `assumptions: list[str]`, `conflicts: list[ConflictRecord]`, `version: int
 3. Email body word count 80–250.
 4. CTA non-empty.
 5. Subject non-empty and ≤60 characters.
-6. ≥70% of normalized key features covered in description.
-7. Reject placeholders: `[TODO]`, `{{product_name}}`, `Lorem ipsum` (case-insensitive where sensible).
-8. ForbiddenClaims: `FDA approved`, `clinically proven`, `guaranteed results`, `#1` when unsupported by brief.
+6. Reject placeholders: `[TODO]`, `{{product_name}}`, `Lorem ipsum` (case-insensitive where sensible).

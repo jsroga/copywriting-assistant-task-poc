@@ -12,6 +12,8 @@ Inbound adapters (Next.js + assistant-ui, FastAPI SSE) call the application core
 - **Reducer / gate / validators / repair budget**: deterministic Python.
 - **UI**: chat, live Product Brief (all fields, always visible, toggleable panel), token-streamed description and email body (UX addition beyond the minimum), HTML email preview, validation badge with pass/fail details.
 
+Natural-language interpretation is delegated to structured LLM extraction. The domain operates on structured field states and deterministic invariants. Runtime validation intentionally avoids lexical heuristics that pretend to provide semantic understanding; richer semantic quality checks would be added as evals in a production system.
+
 ## File structure
 
 Paths relative to the repository root. Generated and ignored files omitted.
@@ -24,8 +26,8 @@ Paths relative to the repository root. Generated and ignored files omitted.
 | `reducer.py` | Pure merge of extraction deltas into the brief: overwrites, history, conflict detection |
 | `gate.py` | Readiness: needs info, needs clarification, or ready |
 | `questions.py` | Next question from field priority and what is still missing |
-| `validation/base.py` | Validator type, the eight default rules, and the function that runs the chain |
-| `validation/rules.py` | Price presence, description/email length, CTA, subject length, feature coverage, placeholders, forbidden claims |
+| `validation/base.py` | Validator type, the default rules, and the function that runs the chain |
+| `validation/rules.py` | Price presence, description/email length, CTA, subject length, placeholders |
 
 ### `backend/app/orchestration/` — turn flow (`main`)
 

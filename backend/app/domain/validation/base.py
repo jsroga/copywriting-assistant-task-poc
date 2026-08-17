@@ -13,9 +13,7 @@ DEFAULT_VALIDATORS: list[Validator] = [
     rules.validate_email_length,
     rules.validate_cta,
     rules.validate_subject,
-    rules.validate_feature_coverage,
     rules.validate_placeholders,
-    rules.validate_forbidden_claims,
 ]
 
 
