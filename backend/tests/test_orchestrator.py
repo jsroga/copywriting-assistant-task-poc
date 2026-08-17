@@ -202,6 +202,34 @@ def test_does_not_generate_without_confirmed_price():
     assert response.validation is None
 
 
+def test_vague_price_blocks_generation_request():
+    """FakeLLM VAGUE price is stored; gate still refuses generation."""
+    brief = make_complete_brief(price=None)
+    brief.price = FieldValue(value=None, raw_text="cheap", status=FieldStatus.VAGUE)
+    brief.category.status = FieldStatus.CONFIRMED
+    brief.category.value = "drinkware"
+    brief.brand_name.status = FieldStatus.CONFIRMED
+    brief.brand_name.value = "AquaPure"
+    store = SessionStore()
+    session = store.get_or_create("s1")
+    session.brief = brief
+    session.optional_fields_prompted = {"category", "brand_name"}
+    store.save(session)
+
+    llm = FakeLLMClient(
+        extract_queue=[ExtractionResult(intent=Intent.REQUEST_GENERATION, updates=[])],
+        generate_fn=make_valid_copy,
+    )
+    orch = ConversationOrchestrator(store=store, llm=llm)
+    response = orch.handle_turn("s1", "write the copy")
+    assert response.type == "question"
+    assert "price" in response.message.lower()
+    assert response.brief["price"]["status"] == "vague"
+    assert response.brief["price"]["value"] is None
+    assert llm.generate_calls == 0
+    assert response.copy is None
+
+
 def test_tone_correction_does_not_skip_missing_price():
     """Regression: answering a different field after the price question must not generate."""
     brief = make_complete_brief(price=None)
@@ -295,10 +323,12 @@ def test_vague_price_stays_vague():
     assert response.brief["price"]["status"] == "vague"
     assert response.brief["price"]["value"] is None
     assert response.brief["price"]["raw_text"] == "cheap"
+    assert llm.generate_calls == 0
+    assert response.type == "question"
 
 
 def test_invalid_price_answer_is_not_stored():
-    """Answering the price question with a non-price word must not write the brief."""
+    """An empty price update is unusable and must not write the brief."""
     brief = make_complete_brief(price=None)
     store = SessionStore()
     session = store.get_or_create("s1")
@@ -314,7 +344,7 @@ def test_invalid_price_answer_is_not_stored():
                     FieldUpdate(
                         field="price",
                         value=None,
-                        raw_text="premium",
+                        raw_text=None,
                         status="vague",
                     ),
                 ],
@@ -322,7 +352,7 @@ def test_invalid_price_answer_is_not_stored():
         ]
     )
     orch = ConversationOrchestrator(store=store, llm=llm)
-    response = orch.handle_turn("s1", "premium")
+    response = orch.handle_turn("s1", "hmm")
 
     assert response.type == "question"
     assert "couldn't extract a price" in response.message.lower()
@@ -333,8 +363,8 @@ def test_invalid_price_answer_is_not_stored():
     assert llm.generate_calls == 0
 
 
-def test_vague_cheap_still_accepted_when_answering_price():
-    """Genuine qualitative price language may stay vague even when price was asked."""
+def test_vague_price_answer_is_stored_without_keyword_matching():
+    """Extractor VAGUE status is stored even when the wording is not a known English list."""
     brief = make_complete_brief(price=None)
     store = SessionStore()
     session = store.get_or_create("s1")
@@ -350,7 +380,7 @@ def test_vague_cheap_still_accepted_when_answering_price():
                     FieldUpdate(
                         field="price",
                         value=None,
-                        raw_text="cheap",
+                        raw_text="premium priced",
                         status="vague",
                     ),
                 ],
@@ -358,10 +388,37 @@ def test_vague_cheap_still_accepted_when_answering_price():
         ]
     )
     orch = ConversationOrchestrator(store=store, llm=llm)
-    response = orch.handle_turn("s1", "cheap")
+    response = orch.handle_turn("s1", "premium priced")
     assert response.brief["price"]["status"] == "vague"
-    assert response.brief["price"]["raw_text"] == "cheap"
+    assert response.brief["price"]["value"] is None
+    assert response.brief["price"]["raw_text"] == "premium priced"
     assert "couldn't extract" not in response.message.lower()
+    assert llm.generate_calls == 0
+
+
+def test_confirmed_exact_price_answer_is_stored():
+    brief = make_complete_brief(price=None)
+    store = SessionStore()
+    session = store.get_or_create("s1")
+    session.brief = brief
+    session.last_asked_field = "price"
+    store.save(session)
+
+    llm = FakeLLMClient(
+        extract_queue=[
+            ExtractionResult(
+                intent=Intent.PROVIDE_INFO,
+                updates=[
+                    FieldUpdate(field="price", value="$199", status="confirmed"),
+                ],
+            )
+        ]
+    )
+    orch = ConversationOrchestrator(store=store, llm=llm)
+    response = orch.handle_turn("s1", "$199")
+    assert response.brief["price"]["status"] == "confirmed"
+    assert response.brief["price"]["value"] == "$199"
+    assert llm.generate_calls == 0
 
 
 def test_explicit_correction_after_delivery_asks_confirm_before_regen():

@@ -243,6 +243,7 @@ def test_difficult_user_vague_incomplete_price():
     assert response.brief["price"]["value"] is None
     assert response.brief["price"]["raw_text"] == "cheap"
     assert llm.generate_calls == 0
+    assert response.type == "question"
 
 
 def test_output_validation_is_deterministic_and_independent_of_llm():

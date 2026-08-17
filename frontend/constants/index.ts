@@ -145,9 +145,7 @@ export const VIOLATION_LABELS: Readonly<Record<string, string>> = {
   email_length: 'The email body is the wrong length',
   missing_cta: 'The email has no call to action',
   subject_too_long: 'The email subject line is too long',
-  feature_coverage: 'Some of your key features are not mentioned',
   placeholder_text: 'The copy still contains placeholder text',
-  forbidden_claim: 'The copy makes a claim your brief does not support',
 }
 
 export const MAIN_GRID_CLASS = {

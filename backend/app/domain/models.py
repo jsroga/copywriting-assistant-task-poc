@@ -34,9 +34,7 @@ class ViolationCode(str, Enum):
     EMAIL_LENGTH = "email_length"
     MISSING_CTA = "missing_cta"
     SUBJECT_TOO_LONG = "subject_too_long"
-    FEATURE_COVERAGE = "feature_coverage"
     PLACEHOLDER_TEXT = "placeholder_text"
-    FORBIDDEN_CLAIM = "forbidden_claim"
 
 
 BriefFieldName = Literal[
