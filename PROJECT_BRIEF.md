@@ -23,7 +23,7 @@ Conversational assistant that:
 5. Generates a product description + marketing email
 6. Runs deterministic validators; **exactly one** automatic repair on failure
 
-The LLM does extract / generate / repair only. Control flow stays in Python.
+The LLM does extract / generate / repair only. Control flow stays in TypeScript.
 
 ---
 
@@ -58,8 +58,8 @@ Explicit correction overwrites + history; ambiguous contradiction → `conflicte
 |----------|--------|-----------|
 | Price required | In `REQUIRED_FIELDS` | Task leaves required-field choice to the implementer; price materially changes both description and email, and the price-presence validator needs a confirmed exact string. |
 | Feature threshold | `MIN_KEY_FEATURES = 1` | One distinguishing confirmed feature is enough for useful copy; forcing two padded the brief with noise. |
-| Meaningful feature | After trim: length ≥ 3 and ≥1 alphanumeric char (`meaningful_features` in `gate.py`) | Rejects empty/noise fillers like `"x"` or `"ok"` while staying a single inspectable rule. |
-| Session store | Gitignored JSON under `backend/.data/sessions/` (`FileSessionStore`) | Survives `uvicorn --reload` mid-demo without a database. |
+| Meaningful feature | After trim: length ≥ 3 and ≥1 alphanumeric char (`meaningfulFeatures` in `gate.ts`) | Rejects empty/noise fillers like `"x"` or `"ok"` while staying a single inspectable rule. |
+| Session store | Gitignored JSON under `backend/.data/sessions/` (`FileSessionStore`) | Survives `tsx watch` mid-demo without a database. |
 | Token streaming | SSE early `extracting` frame + description/email token deltas | **Addition beyond the minimum** — UX only; validation still runs on complete artifacts; chat copy is delivered after pass. |
 | Web UI | Next.js + assistant-ui thin client | Required for a working demo; **the interface is not the deliverable**. |
 | Strands | Explored on `feat/strands`, **not adopted** on `main` | Same domain/validators/`LLMClient`; harness packaging differed. Delivered path is `ConversationOrchestrator` on `main`. |
@@ -72,7 +72,7 @@ Explicit correction overwrites + history; ambiguous contradiction → `conflicte
 ## 3. Architecture (as shipped)
 
 ```text
-User → Next.js + assistant-ui → FastAPI
+User → Next.js + assistant-ui → Hono
   → Orchestrator → LLM extract (delta) → reducer → gate
     → ask question / ask confirm
     OR stream description → email → validators → (one) repair
@@ -80,12 +80,12 @@ User → Next.js + assistant-ui → FastAPI
 
 | Layer | Location | Role |
 |-------|----------|------|
-| Domain | `backend/app/domain/` | models, reducer, gate, questions |
-| LLM | `backend/app/llm/` | `LLMClient`, OpenAI-compatible client, FakeLLM, prompts |
-| Validation | `backend/app/validation/` | Deterministic rules (price token, lengths, CTA, subject, features, placeholders, ForbiddenClaims) |
-| Orchestration | `backend/app/orchestration/` | Turn loop + copy pipeline |
-| Store | `backend/app/store.py` | File-backed sessions |
-| API | `backend/app/main.py` | `POST /api/chat/{id}`, `/stream`, `GET /api/session/{id}` |
+| Domain | `backend/src/domain/` | models, reducer, gate, questions |
+| LLM | `backend/src/llm/` | `LLMClient`, OpenAI-compatible client, FakeLLM, prompts |
+| Validation | `backend/src/domain/validation/` | Deterministic rules (price token, lengths, CTA, subject, features, placeholders, ForbiddenClaims) |
+| Orchestration | `backend/src/orchestration/` | Turn loop + copy pipeline |
+| Store | `backend/src/store.ts` | File-backed sessions |
+| API | `backend/src/main.ts` | `POST /api/chat/{id}`, `/stream`, `GET /api/session/{id}` |
 | UI | `frontend/` | Chat, live brief panel, stream drafts, validation badge |
 
 **Price presence:** confirmed price must appear in description and email body as a

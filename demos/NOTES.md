@@ -1,6 +1,6 @@
 # Difficult-user scenario notes
 
-Inputs: `demos/scenarios/`. Transcripts: `demos/transcripts/`. Runner: `backend/scripts/run_demo.py`.
+Inputs: `demos/scenarios/`. Transcripts: `demos/transcripts/`. Runner: `backend/scripts/run-demo.ts` (`npm --prefix backend run demo`).
 
 ## Contradiction
 User states incompatible values without clear correction language (e.g. 750 ml then 1 litre).  

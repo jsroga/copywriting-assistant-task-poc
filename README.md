@@ -6,61 +6,45 @@ Conversational take-home prototype: gather product facts into a typed `ProductBr
 
 ## Architecture
 
-Inbound adapters (Next.js + assistant-ui, FastAPI SSE) call the application core. The core depends on nothing outside itself. Outbound adapters implement ports declared by the core (`LLMClient`, `SessionStore`). Two interchangeable turn harnesses share the same domain: a hand-written orchestrator on `main`, a Strands Agents harness on `feat/strands`.
+Inbound adapters (Next.js + assistant-ui, Hono SSE) call the application core. The core depends on nothing outside itself. Outbound adapters implement ports declared by the core (`LLMClient`, `SessionStore`). The delivered turn harness is a hand-written `ConversationOrchestrator`. A Strands Agents harness exists on `feat/strands` (Python).
 
 - **LLM**: structured extraction, description/email generation, and repair only. It never owns control flow.
-- **Reducer / gate / validators / repair budget**: deterministic Python.
+- **Reducer / gate / validators / repair budget**: deterministic TypeScript.
 - **UI**: chat, live Product Brief (all fields, always visible, toggleable panel), token-streamed description and email body (UX addition beyond the minimum), HTML email preview, validation badge with pass/fail details.
 
 ## File structure
 
 Paths relative to the repository root. Generated and ignored files omitted.
 
-### `backend/app/domain/` — pure domain
+### `backend/src/domain/` — pure domain
 
 | File | Role |
 |------|------|
-| `models.py` | Pydantic `ProductBrief`, field history and statuses, intents, violation codes, required/optional fields, question priority |
-| `reducer.py` | Pure merge of extraction deltas into the brief: overwrites, history, conflict detection |
-| `gate.py` | Readiness: needs info, needs clarification, or ready |
-| `questions.py` | Next question from field priority and what is still missing |
-| `validation/base.py` | Validator type, the eight default rules, and the function that runs the chain |
-| `validation/rules.py` | Price presence, description/email length, CTA, subject length, feature coverage, placeholders, forbidden claims |
+| `models.ts` | Zod/`ProductBrief`, field history and statuses, intents, violation codes, required/optional fields, question priority |
+| `reducer.ts` | Pure merge of extraction deltas into the brief: overwrites, history, conflict detection |
+| `gate.ts` | Readiness: needs info, needs clarification, or ready |
+| `questions.ts` | Next question from field priority and what is still missing |
+| `validation/index.ts` | Public API: `validate`, `Validator`, `DEFAULT_VALIDATORS` |
+| `validation/rules.ts` | Price presence, description/email length, CTA, subject length, feature coverage, placeholders, forbidden claims |
 
-### `backend/app/orchestration/` — turn flow (`main`)
-
-| File | Role |
-|------|------|
-| `engine.py` | Conversation orchestrator: turn handling, event stream, early exits, optional-field skip, confirm-before-generate |
-| `generation.py` | Copy pipeline: stream description and email, validate, one repair, deliver or fail |
-| `answer_guard.py` | Filter on the user message before extraction |
-| `session_effects.py` | Session bookkeeping: optional-field progress, assumptions, asked-field memory |
-| `messages.py` | Canned assistant copy |
-| `responses.py` | API `TurnResponse` and SSE framing |
-
-### `backend/app/strands_runtime/` — `feat/strands` only
-
-Same domain, validators, and `LLMClient`. The turn is a Strands agent with tools and hooks; policy still decides the next tool in Python.
+### `backend/src/orchestration/` — turn flow
 
 | File | Role |
 |------|------|
-| `bridge.py` | FastAPI ↔ agent boundary; maps a turn onto an agent run |
-| `policy.py` | Pure next-tool decision; domain imports only, no SDK |
-| `tool_impl.py` | Implementations of the five tools |
-| `tools.py` | Tool declarations the agent sees |
-| `hooks.py` | Lifecycle hooks, including a guard that cancels tools not on the allow-list |
-| `context.py` | Per-turn context passed between tools |
-| `agent_factory.py` | Assemble model, tools, and hooks |
-| `model.py` | Strands model adapter |
-| `prompts.py` | Agent system prompt |
+| `engine.ts` | Conversation orchestrator: turn handling, event stream, early exits, optional-field skip, confirm-before-generate |
+| `generation.ts` | Copy pipeline: stream description and email, validate, one repair, deliver or fail |
+| `answer_guard.ts` | Filter on the user message before extraction |
+| `session_effects.ts` | Session bookkeeping: optional-field progress, assumptions, asked-field memory |
+| `messages.ts` | Canned assistant copy |
+| `responses.ts` | API `TurnResponse` and SSE framing |
 
-### `backend/app/llm/` — model adapter
+### `backend/src/llm/` — model adapter
 
 | File | Role |
 |------|------|
-| `openai_client.py` | OpenAI-compatible client (OpenRouter by default, `kimi-k3`); credential resolution, prompt load, brief → confirmed/vague facts |
-| `fake_client.py` | Deterministic double so the full flow runs without a network |
-| `json_utils.py` | Extract and parse JSON from model text |
+| `openai_compatible_client.ts` | OpenAI-compatible client (OpenRouter by default, `kimi-k3`); credential resolution, prompt load, brief → confirmed/vague facts |
+| `fake_client.ts` | Deterministic double so the full flow runs without a network |
+| `json_utils.ts` | Extract and parse JSON from model text |
 | `prompts/extract.md` | Intent + field-update extraction |
 | `prompts/generate_description.md` | Product description |
 | `prompts/generate_email_body.md` | Email body |
@@ -68,18 +52,18 @@ Same domain, validators, and `LLMClient`. The turn is a Strands agent with tools
 | `prompts/repair.md` | One repair from the violation list |
 | `prompts/judge_chat.md` | LLM-as-judge for live e2e; deliberately outside the `LLMClient` port |
 
-The port itself is `backend/app/ports.py` (`LLMClient`: extract, stream description, stream email body, generate email meta, repair).
+The port itself is `backend/src/ports.ts` (`LLMClient`: extract, stream description, stream email body, generate email meta, repair).
 
-### `backend/app/` — composition
+### `backend/src/` — composition
 
 | File | Role |
 |------|------|
-| `main.py` | FastAPI chat + stream endpoints, LLM factory, dependency wiring |
-| `store.py` | In-memory session store plus JSON-file adapter |
+| `main.ts` | Hono chat + stream endpoints, LLM factory, dependency wiring |
+| `store.ts` | In-memory session store plus JSON-file adapter |
 
 ### `backend/tests/`
 
-Offline (FakeLLM): reducer, gate, validators, domain contracts, orchestrator, one-repair path, conflict resolution, early stream status, acceptance criteria, session store, JSON utils. Live (need a key): `test_live_integration.py`, `test_live_e2e_imba_seat.py`. `test_strands_policy.py` exists only on `feat/strands`.
+Offline (FakeLLM): reducer, gate, validators, domain contracts, orchestrator, one-repair path, conflict resolution, early stream status, acceptance criteria, session store, JSON utils. Live (need a key): `live.integration.test.ts`, `live-e2e-imba-seat.test.ts`.
 
 ### `frontend/` — Next.js thin client
 
@@ -125,7 +109,7 @@ What was chosen, what was rejected, and when the decision flips.
 | Provider protocol | Chat completions through a gateway | Native Anthropic Messages: prompt caching, vendor-specific features. Cost: lock-in, lose model swap via one env var | When cost dominates. The extract prompt is identical every turn, so caching would be a real saving |
 | Directory split | Layers with a extracted domain | Full ports-and-adapters, or a vertical cut per artifact type. Cost: ceremony unjustified at two types | Ports when a second vendor or store appears. Vertical cut at a third artifact type |
 | Validation location | `domain/validation/` next to the gate | A sibling `app/validation/` package (the original layout). Same rules, weaker packaging | Already moved onto the domain. Leave it |
-| Port location | `app/ports.py`, consumed by orchestration | `llm/base.py` inside the adapter package (the original layout). Full hexagonal would be `application/ports/` | Together with a second adapter |
+| Port location | `src/ports.ts`, consumed by orchestration | `llm/base.ts` inside the adapter package (the original layout). Full hexagonal would be `application/ports/` | Together with a second adapter |
 | Delivering copy | Stream tokens | One payload at the end: simpler, easier to hide unvalidated text. Cost: tens of seconds of blank UI | If validation had to block showing anything before the end |
 | Test double | Fake client | Recorded live responses: realism, vendor drift. Cost: fixture rot | When an eval set runs in CI |
 | Prompts | Markdown in the repo | Versioned artifact with model, parameters, and input schema. Cost: infra outside the budget | When someone other than the author changes prompts, or at the first A/B |
@@ -149,7 +133,7 @@ Transcripts in `demos/transcripts/`; handling notes in `demos/NOTES.md`.
 
 ## Run locally
 
-Prereqs: Node 20+, Python 3.12+, [`uv`](https://docs.astral.sh/uv/).
+Prereqs: Node 20+.
 
 ```bash
 npm run setup
@@ -164,10 +148,10 @@ Open [http://localhost:5100](http://localhost:5100). Avoid `:5000` (macOS AirPla
 |--------|------|
 | `npm run dev` | Backend + frontend |
 | `npm test` | Offline unit tests (FakeLLM) |
-| `npm run test:workers -- 5` | Same offline suite across 5 workers (pytest-xdist) |
+| `npm run test:workers -- 5` | Same offline suite across 5 Vitest workers |
 | `npm run test:integration` | Live OpenRouter smoke |
 | `npm run test:e2e` | Live IMBA SEAT flow + LLM judge (hard 180s budget) |
-| `npm run lint` / `npm run typecheck` | Frontend ESLint / `tsc --noEmit` |
+| `npm run lint` / `npm run typecheck` | Frontend ESLint / frontend + backend `tsc --noEmit` |
 | `npm run quality` | lint + typecheck + offline tests |
 | `npm run build` | Frontend production build |
 

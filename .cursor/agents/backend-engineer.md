@@ -1,6 +1,6 @@
 ---
 name: backend-engineer
-description: Implements the FastAPI, domain, LLM boundary, orchestration, validation, and backend tests. Use proactively for backend tasks.
+description: Implements the Hono API, domain, LLM boundary, orchestration, validation, and backend tests. Use proactively for backend tasks.
 model: inherit
 ---
 
@@ -35,7 +35,7 @@ Quality gates (blocking — run before reporting done):
 
 ```bash
 npm test                              # offline unit tests
-npm run test:workers -- 5 <path>      # parallel (pytest-xdist); prefer affected files
+npm run test:workers -- 5 <path>      # parallel Vitest; prefer affected files
 npm run test:e2e                      # live IMBA SEAT flow + LLM judge (needs API key)
 ```
 
@@ -49,7 +49,7 @@ E2E rules:
 
 - Hard timeout **180 seconds**. Timeout = performance failure to investigate.
 - Do not raise the timeout to greenwash slowness.
-- On timeout: reduce LLM round-trips / elicitation / repair thrash; re-run with `-s` and watch streamed logs.
-- Console streaming (`-s`) is required when diagnosing e2e.
+- On timeout: reduce LLM round-trips / elicitation / repair thrash; re-run with console streaming and watch logs.
+- Console streaming is required when diagnosing e2e.
 
 Report completed task IDs, tests run, timeout outcomes, and any spec deviation.

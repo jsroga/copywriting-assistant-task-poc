@@ -36,7 +36,7 @@ Responsibilities:
   - generate from normalized brief state when possible
 - Prefer updating Spec Kit artifacts over silent implementation drift.
 - If brief and Spec Kit conflict: stop, document the conflict, propose reconciliation, do not invent new product scope.
-- Keep stack choices unless the parent agent explicitly reopens them: FastAPI + Pydantic + OpenAI-compatible LLM client; Next.js + assistant-ui; in-memory sessions; no DB/auth/RAG/multi-agent/streaming for MVP.
+- Keep stack choices unless the parent agent explicitly reopens them: Hono + Zod + OpenAI-compatible LLM client; Next.js + assistant-ui; in-memory sessions; no DB/auth/RAG/multi-agent for this prototype.
 - Mark optional work clearly; never expand required scope for polish.
 
 When delegated work:

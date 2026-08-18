@@ -53,7 +53,7 @@ Per-command table and the e2e timeout playbook: `.cursor/skills/run-tests/SKILL.
 
 ```bash
 npm test                    # offline unit tests (FakeLLM, no network)
-npm run test:workers -- 5   # same suite across 5 workers (pytest-xdist)
+npm run test:workers -- 5   # same suite across 5 Vitest workers
 npm run test:integration    # live provider smoke (needs key)
 npm run test:e2e            # live flow + LLM judge, hard 180s budget (needs key)
 ```
@@ -61,8 +61,8 @@ npm run test:e2e            # live flow + LLM judge, hard 180s budget (needs key
 Target a file or node id for focused changes:
 
 ```bash
-cd backend && uv run pytest tests/test_reducer.py
-cd backend && uv run pytest tests/test_orchestrator.py::test_name
+cd backend && npx vitest run tests/reducer.test.ts
+cd backend && npx vitest run tests/orchestrator.test.ts -t test_ready
 ```
 
 Never skip, xfail, comment out, weaken, or delete a test to get green. An e2e
@@ -76,7 +76,7 @@ Never claim frontend or “done” without these passing from repo root:
 npm run quality
 # equivalent:
 #   npm run lint
-#   npm run typecheck   # frontend tsc --noEmit
+#   npm run typecheck   # frontend + backend tsc --noEmit
 #   npm test            # backend unit tests (offline)
 ```
 
@@ -88,7 +88,7 @@ npm run test:e2e
 
 ### E2E timeout = performance budget
 
-- `test:e2e` / `tests/test_live_e2e_imba_seat.py` has a hard **180 second** timeout.
+- `test:e2e` / `tests/live-e2e-imba-seat.test.ts` has a hard **180 second** timeout.
 - Timeout is a **fail**: treat as a performance / round-trip regression to fix.
 - Do **not** raise the timeout to make the gate pass.
 - On timeout: inspect turn count, LLM call volume, streaming stalls, and optional-field loops; reduce work.
@@ -98,9 +98,9 @@ npm run test:e2e
 | Gate | Command | Meaning |
 |------|---------|---------|
 | ESLint | `npm run lint` | Frontend local rules + no `any` / no type assertions |
-| TypeScript | `npm run typecheck` | `frontend` `tsc --noEmit` must be clean |
+| TypeScript | `npm run typecheck` | `frontend` and `backend` `tsc --noEmit` must be clean |
 | Unit | `npm test` | Offline FakeLLM / domain tests |
-| Unit (parallel) | `npm run test:workers -- --workers=5` | Same offline suite via pytest-xdist |
+| Unit (parallel) | `npm run test:workers -- 5` | Same offline suite via Vitest workers |
 | E2E | `npm run test:e2e` | Live IMBA SEAT flow + LLM-as-judge; streams to console; ≤180s |
 | Live UI | terminal + `http://localhost:5100` | No Next Build Error / overlay; page renders |
 
@@ -113,7 +113,7 @@ When handing over after a focused change: run **only the affected tests** (file 
 | Agent | Role |
 |-------|------|
 | `architect` | Spec Kit / architecture / contracts; reconcile with `PROJECT_BRIEF.md` |
-| `backend-engineer` | FastAPI, domain, LLM boundary, tests |
+| `backend-engineer` | Hono, domain, LLM boundary, tests |
 | `frontend-engineer` | Next.js + assistant-ui demo |
 | `verifier` | Read-only acceptance verification |
 

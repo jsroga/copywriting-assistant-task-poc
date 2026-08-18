@@ -8,17 +8,17 @@
 
 ## Summary
 
-Build a conversational e-commerce copywriting assistant where the LLM extracts structured deltas and generates/repairs copy, while deterministic Python code owns reduce, readiness, questions, validation, and the one-repair budget. Deliver a minimal Next.js + assistant-ui chat demo with a live ProductBrief/validation panel, mocked-LLM tests, and difficult-user transcripts.
+Build a conversational e-commerce copywriting assistant where the LLM extracts structured deltas and generates/repairs copy, while deterministic TypeScript code owns reduce, readiness, questions, validation, and the one-repair budget. Deliver a minimal Next.js + assistant-ui chat demo with a live ProductBrief/validation panel, mocked-LLM tests, and difficult-user transcripts.
 
 ## Technical Context
 
-**Language/Version**: Python 3.12+ (backend), TypeScript (frontend / Next.js)
+**Language/Version**: TypeScript (backend Node 20+ / Hono; frontend Next.js)
 
-**Primary Dependencies**: FastAPI, Pydantic, OpenAI Python SDK (Structured Outputs); Next.js, assistant-ui, minimal shadcn-style primitives
+**Primary Dependencies**: Hono, Zod, OpenAI TypeScript SDK (Structured Outputs); Next.js, assistant-ui, minimal shadcn-style primitives
 
-**Storage**: In-memory `dict[str, Session]` (no database)
+**Storage**: In-memory `Map<string, Session>` (no database)
 
-**Testing**: pytest with FakeLLMClient; frontend lint/build
+**Testing**: Vitest with FakeLLMClient; frontend lint/build
 
 **Target Platform**: Local developer machines (macOS/Linux); browser UI + local API
 
@@ -38,12 +38,12 @@ Build a conversational e-commerce copywriting assistant where the LLM extracts s
 |-----------|--------|-------|
 | I. Deterministic control flow | PASS | Orchestrator + gate + validators own flow |
 | II. Structured state source of truth | PASS | Typed ProductBrief; generator uses normalized brief |
-| III. Mockable LLM boundaries | PASS | LLMClient + FakeLLMClient + OpenAILLMClient |
+| III. Mockable LLM boundaries | PASS | LLMClient + FakeLLMClient + OpenAICompatibleLLMClient |
 | IV. Explicit uncertainty | PASS | MISSING/VAGUE/CONFIRMED/CONFLICTED |
 | V. Bounded generation repair | PASS | Exactly one automatic repair |
 | VI. Scope discipline | PASS | No DB/auth/RAG/multi-agent/streaming |
 | VII. Spec first | PASS | Implementing from Spec Kit artifacts |
-| VIII. Tests before polish | PASS | Core pytest contract before UI polish |
+| VIII. Tests before polish | PASS | Core Vitest contract before UI polish |
 
 Post-design re-check: PASS — design artifacts introduce no constitution violations.
 
@@ -75,31 +75,35 @@ specs/001-ecommerce-copywriting-assistant/
 │   ├── frontend-engineer.md
 │   └── verifier.md
 ├── backend/
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── store.py
+│   ├── src/
+│   │   ├── main.ts
+│   │   ├── store.ts
 │   │   ├── orchestration/
-│   │   │   ├── engine.py          # ConversationOrchestrator turn loop
-│   │   │   ├── generation.py      # CopyPipeline: generate → validate → one repair
-│   │   │   ├── messages.py        # canned assistant messages + intent regexes
-│   │   │   ├── responses.py       # TurnResponse wire contract + SSE framing
-│   │   │   └── session_effects.py # optional-field / assumption bookkeeping
+│   │   │   ├── engine.ts          # ConversationOrchestrator turn loop
+│   │   │   ├── generation.ts      # CopyPipeline: generate → validate → one repair
+│   │   │   ├── messages.ts        # canned assistant messages + intent regexes
+│   │   │   ├── responses.ts       # TurnResponse wire contract + SSE framing
+│   │   │   └── session_effects.ts # optional-field / assumption bookkeeping
 │   │   ├── domain/
-│   │   │   ├── models.py
-│   │   │   ├── reducer.py
-│   │   │   ├── gate.py
-│   │   │   └── questions.py
+│   │   │   ├── models.ts
+│   │   │   ├── reducer.ts
+│   │   │   ├── gate.ts
+│   │   │   ├── questions.ts
+│   │   │   └── validation/
+│   │   │       ├── index.ts
+│   │   │       ├── types.ts
+│   │   │       ├── engine.ts
+│   │   │       ├── registry.ts
+│   │   │       ├── text.ts
+│   │   │       └── rules.ts
 │   │   ├── llm/
-│   │   │   ├── base.py
-│   │   │   ├── openai_client.py
-│   │   │   ├── fake_client.py
-│   │   │   ├── json_utils.py
+│   │   │   ├── openai_compatible_client.ts
+│   │   │   ├── fake_client.ts
+│   │   │   ├── json_utils.ts
 │   │   │   └── prompts/
-│   │   └── validation/
-│   │       ├── base.py
-│   │       └── rules.py
+│   │   └── ports.ts
 │   ├── tests/
-│   ├── pyproject.toml
+│   ├── package.json
 │   └── .env.example
 ├── frontend/
 │   ├── app/
@@ -112,7 +116,7 @@ specs/001-ecommerce-copywriting-assistant/
 
 **Structure Decision**: Split frontend/backend as specified in PROJECT_BRIEF §5.19. No `.squad/`. Cursor + Spec Kit orchestrate development.
 
-One deviation from §5.19: the single `app/orchestrator.py` became the `app/orchestration/` package. The turn loop plus wire contract, canned messages, and session bookkeeping exceeded the repo's file-length gate in one module; splitting them keeps each concern independently readable and testable. `ConversationOrchestrator`, `TurnResponse`, and `sse_frame` are re-exported from `app.orchestration`, so the import surface is still a single module path.
+One deviation from §5.19: the single orchestrator module became the `src/orchestration/` package. The turn loop plus wire contract, canned messages, and session bookkeeping exceeded a readable file length in one module; splitting them keeps each concern independently testable.
 
 ## Complexity Tracking
 

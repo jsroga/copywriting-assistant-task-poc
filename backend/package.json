@@ -1,0 +1,28 @@
+{
+  "name": "ecommerce-copywriting-assistant-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --exclude tests/**/*.integration.test.ts --exclude tests/live-e2e-imba-seat.test.ts",
+    "test:workers": "vitest run --maxWorkers --exclude tests/**/*.integration.test.ts --exclude tests/live-e2e-imba-seat.test.ts",
+    "test:integration": "vitest run tests/live.integration.test.ts --testTimeout=180000",
+    "test:e2e": "vitest run tests/live-e2e-imba-seat.test.ts --testTimeout=180000",
+    "demo": "tsx scripts/run-demo.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.0",
+    "dotenv": "^16.6.1",
+    "hono": "^4.9.0",
+    "openai": "^4.104.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.0"
+  }
+}

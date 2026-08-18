@@ -13,7 +13,7 @@ All Technical Context items were pre-decided by `PROJECT_BRIEF.md`. This documen
 
 ## Decision 2: OpenAI Structured Outputs behind LLMClient
 
-- **Decision**: `OpenAILLMClient` uses OpenAI Structured Outputs with Pydantic schemas; `FakeLLMClient` for tests; model via `OPENAI_MODEL`, key via `OPENAI_API_KEY`.
+- **Decision**: `OpenAICompatibleLLMClient` uses OpenAI Structured Outputs with Pydantic schemas; `FakeLLMClient` for tests; model via `OPENAI_MODEL`, key via `OPENAI_API_KEY`.
 - **Rationale**: Brief-fixed stack; schema conformance contains output shape for extract/generate/repair.
 - **Alternatives considered**: Free-form JSON parsing — weaker guarantees; vendor SDK calls scattered in orchestrator — hard to mock.
 

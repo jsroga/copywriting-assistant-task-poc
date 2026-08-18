@@ -1,6 +1,6 @@
 # Frontend — Next.js + assistant-ui
 
-Thin client over the FastAPI chat contract. All product logic (extraction, reducer, readiness gate, validation, repair) lives in `backend/`; this app renders conversation, live `ProductBrief` state, streaming copy, and validation status.
+Thin client over the Hono chat contract. All product logic (extraction, reducer, readiness gate, validation, repair) lives in `backend/`; this app renders conversation, live `ProductBrief` state, streaming copy, and validation status.
 
 Run everything from the repo root (`npm run dev` starts API `:5001` + UI `:5100`). To run only the UI:
 

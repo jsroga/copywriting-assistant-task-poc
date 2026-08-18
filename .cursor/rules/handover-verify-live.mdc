@@ -9,7 +9,7 @@ alwaysApply: true
 
 ## Must pass
 
-1. **TSC** — `npm run typecheck` (`frontend` `tsc --noEmit`) clean.
+1. **TSC** — `npm run typecheck` (`frontend` and `backend` `tsc --noEmit`) clean.
 2. **Lint** — `npm run lint` clean (no `local/*` disables).
 3. **Unit tests (if any affected)** — run **targeted** offline tests for changed code (file/node ids). Use `npm run test:workers -- N <path>` when parallelizing. Do not skip failing tests.
 4. **Targeted E2E** — when the change touches chat/orchestrator/stream/validation/confirm flow (or user asked for e2e): `npm run test:e2e` (≤180s; timeout = fail). Skip only if no API key — say so explicitly.

@@ -5,15 +5,13 @@
 
 ## Prerequisites
 
-- Python 3.12+
 - Node.js 20+ (or current LTS supporting Next.js scaffold)
-- `uv`
-- An LLM key for live runs — `OPENROUTER_API_KEY` (preferred, with `OPENAI_BASE_URL`/`OPENAI_MODEL`) or `OPENAI_API_KEY`. Not required for pytest: the offline suite uses `FakeLLMClient`, and the API falls back to it when no key is present or `USE_FAKE_LLM=1`.
+- An LLM key for live runs — `OPENROUTER_API_KEY` (preferred, with `OPENAI_BASE_URL`/`OPENAI_MODEL`) or `OPENAI_API_KEY`. Not required for Vitest: the offline suite uses `FakeLLMClient`, and the API falls back to it when no key is present or `USE_FAKE_LLM=1`.
 
 ## Setup
 
 ```bash
-npm run setup   # root deps + frontend deps + backend uv sync
+npm run setup   # root deps + frontend deps + backend deps
 npm run dev     # API :5001 + UI :5100
 ```
 

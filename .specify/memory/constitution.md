@@ -1,9 +1,10 @@
 <!--
 Sync Impact Report
-- Version change: (template) → 1.0.0
-- Modified principles: placeholders → eight project principles from PROJECT_BRIEF.md
-- Added sections: Architecture Constraints; Development Workflow
-- Removed sections: none (template placeholders replaced)
+- Version change: 1.0.0 → 1.1.0
+- Modified principles: none
+- Modified Architecture Constraints: FastAPI + Python 3.12+ + Pydantic → Hono + Node + TypeScript + Zod
+- Added sections: none
+- Removed sections: none
 - Follow-up TODOs: none
 -->
 
@@ -66,7 +67,7 @@ cutting testable core behavior.
 ## Architecture Constraints
 
 - Stack is fixed for this prototype: Next.js + TypeScript + assistant-ui frontend;
-  FastAPI + Python 3.12+ + Pydantic backend; OpenAI Structured Outputs for LLM
+  Hono + Node 20+ + Zod backend; OpenAI Structured Outputs for LLM
   calls; in-memory session storage.
 - Extractor returns deltas only; reducer owns canonical state mutation.
 - Completeness/readiness gate and objective validators are deterministic code.
@@ -103,4 +104,4 @@ against unmet acceptance criteria. `PROJECT_BRIEF.md` remains the original produ
 and architecture brief; active Spec Kit artifacts under `specs/` are the binding
 implementation contract once reconciled with the brief.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-09 | **Last Amended**: 2026-08-09
+**Version**: 1.1.0 | **Ratified**: 2026-08-09 | **Last Amended**: 2026-08-16

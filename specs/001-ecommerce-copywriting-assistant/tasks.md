@@ -59,7 +59,7 @@
 - [x] T017 [P] [US1] Define `LLMClient` protocol in `backend/app/llm/base.py`
 - [x] T018 [P] [US1] Implement `FakeLLMClient` in `backend/app/llm/fake_client.py` with call counters
 - [x] T019 [US1] Implement prompt files `backend/app/llm/prompts/extract.md`, `generate.md`, `repair.md`
-- [x] T020 [US1] Implement `OpenAILLMClient` in `backend/app/llm/openai_client.py` (Structured Outputs only inside this module)
+- [x] T020 [US1] Implement `OpenAICompatibleLLMClient` in `backend/src/llm/openai_compatible_client.ts` (Structured Outputs only inside this module)
 
 ### Orchestrator & API
 
@@ -67,7 +67,7 @@
 - [x] T022 [US1] Implement turn orchestrator in `backend/app/orchestration/engine.py` (extract→reduce→gate→ask/generate→validate→one repair)
 - [x] T023 [US1] Integration tests in `backend/tests/test_orchestrator.py` and `backend/tests/test_repair_flow.py` covering PROJECT_BRIEF §11.4 including call-count asserts
 - [x] T024 [US1] Implement FastAPI app + `POST /api/chat/{session_id}` in `backend/app/main.py` per `contracts/chat-api.md` (CORS for local frontend)
-- [x] T025 [US1] Wire dependency injection so tests use FakeLLMClient and runtime uses OpenAILLMClient based on env
+- [x] T025 [US1] Wire dependency injection so tests use FakeLLMClient and runtime uses OpenAICompatibleLLMClient based on env
 
 **Checkpoint**: US1 backend MVP demonstrable via API + pytest
 
