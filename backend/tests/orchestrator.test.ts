@@ -228,6 +228,41 @@ describe("orchestrator", () => {
     expect(response.validation).toBeNull();
   });
 
+  it("test_vague_price_blocks_generation_request", async () => {
+    const brief = makeCompleteBrief({ price: null });
+    brief.price = createFieldValue({
+      value: null,
+      raw_text: "cheap",
+      status: FieldStatus.VAGUE,
+    });
+    brief.category.status = FieldStatus.CONFIRMED;
+    brief.category.value = "drinkware";
+    brief.brand_name.status = FieldStatus.CONFIRMED;
+    brief.brand_name.value = "AquaPure";
+    const store = new SessionStore();
+    const session = store.getOrCreate("s1");
+    session.brief = brief;
+    session.optional_fields_prompted = new Set(["category", "brand_name"]);
+    store.save(session);
+
+    const llm = new FakeLLMClient({
+      extractQueue: [
+        createExtractionResult({ intent: Intent.REQUEST_GENERATION, updates: [] }),
+      ],
+      generateFn: makeValidCopy,
+    });
+    const response = await new ConversationOrchestrator({ store, llm }).handleTurn(
+      "s1",
+      "write the copy",
+    );
+    expect(response.type).toBe("question");
+    expect(response.message.toLowerCase()).toContain("price");
+    expect((response.brief.price as { status: string }).status).toBe("vague");
+    expect((response.brief.price as { value: unknown }).value).toBeNull();
+    expect(llm.generateCalls).toBe(0);
+    expect(response.copy).toBeNull();
+  });
+
   it("test_tone_correction_does_not_skip_missing_price", async () => {
     const brief = makeCompleteBrief({ price: null });
     brief.tone = createFieldValue({
@@ -329,6 +364,8 @@ describe("orchestrator", () => {
     expect((response.brief.price as { status: string }).status).toBe("vague");
     expect((response.brief.price as { value: unknown }).value).toBeNull();
     expect((response.brief.price as { raw_text: string }).raw_text).toBe("cheap");
+    expect(llm.generateCalls).toBe(0);
+    expect(response.type).toBe("question");
   });
 
   it("test_invalid_price_answer_is_not_stored", async () => {
@@ -347,7 +384,7 @@ describe("orchestrator", () => {
             createFieldUpdate({
               field: "price",
               value: null,
-              raw_text: "premium",
+              raw_text: null,
               status: "vague",
             }),
           ],
@@ -356,7 +393,7 @@ describe("orchestrator", () => {
     });
     const response = await new ConversationOrchestrator({ store, llm }).handleTurn(
       "s1",
-      "premium",
+      "hmm",
     );
     expect(response.type).toBe("question");
     expect(response.message.toLowerCase()).toContain("couldn't extract a price");
@@ -367,7 +404,7 @@ describe("orchestrator", () => {
     expect(llm.generateCalls).toBe(0);
   });
 
-  it("test_vague_cheap_still_accepted_when_answering_price", async () => {
+  it("test_vague_price_answer_is_stored_without_keyword_matching", async () => {
     const brief = makeCompleteBrief({ price: null });
     const store = new SessionStore();
     const session = store.getOrCreate("s1");
@@ -383,7 +420,7 @@ describe("orchestrator", () => {
             createFieldUpdate({
               field: "price",
               value: null,
-              raw_text: "cheap",
+              raw_text: "premium priced",
               status: "vague",
             }),
           ],
@@ -392,11 +429,42 @@ describe("orchestrator", () => {
     });
     const response = await new ConversationOrchestrator({ store, llm }).handleTurn(
       "s1",
-      "cheap",
+      "premium priced",
     );
     expect((response.brief.price as { status: string }).status).toBe("vague");
-    expect((response.brief.price as { raw_text: string }).raw_text).toBe("cheap");
+    expect((response.brief.price as { value: unknown }).value).toBeNull();
+    expect((response.brief.price as { raw_text: string }).raw_text).toBe(
+      "premium priced",
+    );
     expect(response.message.toLowerCase()).not.toContain("couldn't extract");
+    expect(llm.generateCalls).toBe(0);
+  });
+
+  it("test_confirmed_exact_price_answer_is_stored", async () => {
+    const brief = makeCompleteBrief({ price: null });
+    const store = new SessionStore();
+    const session = store.getOrCreate("s1");
+    session.brief = brief;
+    session.last_asked_field = "price";
+    store.save(session);
+
+    const llm = new FakeLLMClient({
+      extractQueue: [
+        createExtractionResult({
+          intent: Intent.PROVIDE_INFO,
+          updates: [
+            createFieldUpdate({ field: "price", value: "$199", status: "confirmed" }),
+          ],
+        }),
+      ],
+    });
+    const response = await new ConversationOrchestrator({ store, llm }).handleTurn(
+      "s1",
+      "$199",
+    );
+    expect((response.brief.price as { status: string }).status).toBe("confirmed");
+    expect((response.brief.price as { value: unknown }).value).toBe("$199");
+    expect(llm.generateCalls).toBe(0);
   });
 
   it("test_explicit_correction_after_delivery_asks_confirm_before_regen", async () => {

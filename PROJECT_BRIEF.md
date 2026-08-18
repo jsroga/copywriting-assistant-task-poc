@@ -82,7 +82,7 @@ User → Next.js + assistant-ui → Hono
 |-------|----------|------|
 | Domain | `backend/src/domain/` | models, reducer, gate, questions |
 | LLM | `backend/src/llm/` | `LLMClient`, OpenAI-compatible client, FakeLLM, prompts |
-| Validation | `backend/src/domain/validation/` | Deterministic rules (price token, lengths, CTA, subject, features, placeholders, ForbiddenClaims) |
+| Validation | `backend/src/domain/validation/` | Deterministic rules (price token, lengths, CTA, subject, placeholders) |
 | Orchestration | `backend/src/orchestration/` | Turn loop + copy pipeline |
 | Store | `backend/src/store.ts` | File-backed sessions |
 | API | `backend/src/main.ts` | `POST /api/chat/{id}`, `/stream`, `GET /api/session/{id}` |
@@ -92,8 +92,9 @@ User → Next.js + assistant-ui → Hono
 **whole token** (not a substring), so `$49` does not pass against `$499`.
 
 **Artifacts:** description 60–200 words; email subject ≤60 chars, body 80–250
-words, non-empty CTA; ≥70% key-feature coverage; no placeholders; ForbiddenClaims
-blacklist when unsupported by the brief.
+words, non-empty CTA; no placeholders. Semantic feature coverage and unsupported
+claims are prompt constraints; runtime validation does not approximate them with
+lexical heuristics.
 
 ---
 

@@ -95,7 +95,7 @@ Operators and evaluators can see current structured product brief, field statuse
 - Generation readiness is never inferred from free-text model wording such as “I think we have enough.”
 - No meaningful confirmed key feature keeps the session not ready.
 - Obvious unfinished placeholders (`[TODO]`, `{{product_name}}`, `Lorem ipsum`) fail validation.
-- Unsupported high-risk claims (`FDA approved`, `clinically proven`, `guaranteed results`, `#1`) fail validation when unsupported by the brief (rule name: ForbiddenClaims, not “NoHallucinatedClaims”).
+- Semantic feature coverage and unsupported-claim detection are not runtime domain validators; they are prompt constraints, with richer checks left to evals in a production system.
 
 ## Requirements *(mandatory)*
 
@@ -117,7 +117,7 @@ Operators and evaluators can see current structured product brief, field statuse
 - **FR-014**: After readiness is ready and generation is confirmed (or `REQUEST_GENERATION`), the system MUST generate both a product description and a marketing email (subject, body, CTA) in one generation operation. Fact-fill that first reaches READY MUST ask for confirmation rather than generating immediately.
 - **FR-015**: Product description length MUST be 60–200 words; email body 80–250 words; subject non-empty and ≤60 characters; email MUST include a CTA.
 - **FR-016**: Generated output MUST be validated before being treated as successful final copy.
-- **FR-017**: Validation MUST enforce: confirmed exact price presence in description and email body as a whole token (not a substring of a longer price); length rules; CTA presence; subject rules; ≥70% coverage of normalized key features; rejection of obvious placeholders; ForbiddenClaims blacklist for unsupported high-risk claims.
+- **FR-017**: Validation MUST enforce: confirmed exact price presence in description and email body as a whole token (not a substring of a longer price); length rules; CTA presence; subject rules; rejection of obvious placeholders. Runtime validation MUST NOT use lexical heuristics to infer semantic feature coverage or unsupported marketing claims.
 - **FR-018**: On first validation failure, the system MUST perform exactly one automatic repair that receives brief, previous output, and exact violations; then re-validate.
 - **FR-019**: If repaired output still fails, the system MUST return a visible failed-validation state and MUST NOT perform another automatic repair.
 - **FR-020**: The session MUST remain editable after copy has been generated.
@@ -149,7 +149,7 @@ Operators and evaluators can see current structured product brief, field statuse
 - **SC-005**: Vague price language never becomes a fabricated numeric price in the vague-input demo.
 - **SC-006**: Prompt-injection demo shows unchanged assistant purpose, no hidden-prompt disclosure, and uncorrupted product state.
 - **SC-007**: Invalid first generation triggers exactly one repair attempt; a second failure surfaces as failed validation with no further automatic repair (proven by call-count tests).
-- **SC-008**: Objective validation rules for price, lengths, CTA, subject, feature coverage, placeholders, and ForbiddenClaims are enforced before successful final output.
+- **SC-008**: Objective validation rules for price, lengths, CTA, subject, and placeholders are enforced before successful final output.
 - **SC-009**: Demo UI exposes live structured brief statuses and validation status during a local session.
 - **SC-010**: Deliverables include working demo, tests with mocked LLM, ≥3 difficult-user transcripts, Spec Kit artifacts, and a roughly one-page README.
 
@@ -157,8 +157,8 @@ Operators and evaluators can see current structured product brief, field statuse
 
 - Single local operator / evaluator; no multi-user auth or roles.
 - English product copy only for the prototype.
-- “Meaningful” key features: after trim, length ≥ 3 and ≥1 alphanumeric character; at least one confirmed item (`MIN_KEY_FEATURES` / `meaningful_features` in `backend/app/domain/gate.py`).
-- Feature coverage ≥70% uses simple normalized substring/token matching, not semantic embeddings.
+- “Meaningful” key features: after trim, length ≥ 3 and ≥1 alphanumeric character; at least one confirmed item (`MIN_KEY_FEATURES` / `meaningful_features` in `backend/src/domain/gate.ts`).
+- Semantic feature coverage and unsupported-claim detection are prompt constraints (and future evals), not lexical runtime validators.
 - Sessions are file-backed JSON (not a database); a browser refresh still starts a new session by minting a new id.
 - Optional fourth scenario (correction after delivery) is strongly recommended and included if time allows.
 - Stack details are in the plan / `PROJECT_BRIEF.md` (delivered-system note); product behavior here is binding.

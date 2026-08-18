@@ -2,8 +2,6 @@ import {
   validateCta,
   validateDescriptionLength,
   validateEmailLength,
-  validateFeatureCoverage,
-  validateForbiddenClaims,
   validatePlaceholders,
   validatePricePresence,
   validateSubject,
@@ -16,7 +14,5 @@ export const DEFAULT_VALIDATORS: Validator[] = [
   validateEmailLength,
   validateCta,
   validateSubject,
-  validateFeatureCoverage,
   validatePlaceholders,
-  validateForbiddenClaims,
 ];

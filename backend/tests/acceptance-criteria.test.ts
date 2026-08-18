@@ -256,6 +256,7 @@ describe("acceptance criteria", () => {
     expect((response.brief.price as { value: unknown }).value).toBeNull();
     expect((response.brief.price as { raw_text: string }).raw_text).toBe("cheap");
     expect(llm.generateCalls).toBe(0);
+    expect(response.type).toBe("question");
   });
 
   it("test_output_validation_is_deterministic_and_independent_of_llm", () => {

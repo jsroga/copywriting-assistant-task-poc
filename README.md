@@ -12,6 +12,8 @@ Inbound adapters (Next.js + assistant-ui, Hono SSE) call the application core. T
 - **Reducer / gate / validators / repair budget**: deterministic TypeScript.
 - **UI**: chat, live Product Brief (all fields, always visible, toggleable panel), token-streamed description and email body (UX addition beyond the minimum), HTML email preview, validation badge with pass/fail details.
 
+Natural-language interpretation is delegated to structured LLM extraction. The domain operates on structured field states and deterministic invariants. Runtime validation intentionally avoids lexical heuristics that pretend to provide semantic understanding; richer semantic quality checks would be added as evals in a production system.
+
 ## File structure
 
 Paths relative to the repository root. Generated and ignored files omitted.
@@ -25,7 +27,7 @@ Paths relative to the repository root. Generated and ignored files omitted.
 | `gate.ts` | Readiness: needs info, needs clarification, or ready |
 | `questions.ts` | Next question from field priority and what is still missing |
 | `validation/index.ts` | Public API: `validate`, `Validator`, `DEFAULT_VALIDATORS` |
-| `validation/rules.ts` | Price presence, description/email length, CTA, subject length, feature coverage, placeholders, forbidden claims |
+| `validation/rules.ts` | Price presence, description/email length, CTA, subject length, placeholders |
 
 ### `backend/src/orchestration/` — turn flow
 

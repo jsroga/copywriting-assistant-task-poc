@@ -31,9 +31,7 @@ export const ViolationCode = {
   EMAIL_LENGTH: "email_length",
   MISSING_CTA: "missing_cta",
   SUBJECT_TOO_LONG: "subject_too_long",
-  FEATURE_COVERAGE: "feature_coverage",
   PLACEHOLDER_TEXT: "placeholder_text",
-  FORBIDDEN_CLAIM: "forbidden_claim",
 } as const;
 export type ViolationCode = (typeof ViolationCode)[keyof typeof ViolationCode];
 
@@ -265,9 +263,7 @@ export const violationSchema = z.object({
     "email_length",
     "missing_cta",
     "subject_too_long",
-    "feature_coverage",
     "placeholder_text",
-    "forbidden_claim",
   ]),
   message: z.string(),
   artifact: z.enum(["description", "email", "both"]),

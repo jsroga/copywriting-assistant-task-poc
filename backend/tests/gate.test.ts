@@ -30,6 +30,19 @@ describe("gate", () => {
     expect(decision.next_field).toBe("target_audience");
   });
 
+  it("test_vague_price_does_not_satisfy_readiness", () => {
+    const brief = makeCompleteBrief({ price: null });
+    brief.price = createFieldValue({
+      value: null,
+      raw_text: "cheap",
+      status: FieldStatus.VAGUE,
+    });
+    const decision = evaluateReadiness(brief, null, ["category", "brand_name"]);
+    expect(decision.status).toBe(GateStatus.NEEDS_INFO);
+    expect(decision.next_field).toBe("price");
+    expect(brief.price.value).toBeNull();
+  });
+
   it("test_single_key_feature_is_enough_to_be_ready", () => {
     const brief = makeCompleteBrief({ key_features: ["only one"] });
     const decision = evaluateReadiness(brief);

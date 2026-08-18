@@ -88,6 +88,47 @@ describe("reducer", () => {
     expect(result.version).toBe(1);
   });
 
+  it("test_qualitative_price_updates_stay_vague_regardless_of_wording", () => {
+    for (const rawText of [
+      "cheap",
+      "premium priced",
+      "entry-level pricing",
+      "around fifty euros",
+      "between 40 and 60 EUR",
+      "I don't know the price",
+    ]) {
+      const brief = createProductBrief();
+      const extraction = createExtractionResult({
+        intent: Intent.PROVIDE_INFO,
+        updates: [
+          createFieldUpdate({
+            field: "price",
+            value: null,
+            raw_text: rawText,
+            status: "vague",
+          }),
+        ],
+      });
+      const result = reduceBrief(brief, extraction, 1);
+      expect(result.price.status).toBe(FieldStatus.VAGUE);
+      expect(result.price.value).toBeNull();
+      expect(result.price.raw_text).toBe(rawText);
+    }
+  });
+
+  it("test_confirmed_exact_price_is_stored", () => {
+    const brief = createProductBrief();
+    const extraction = createExtractionResult({
+      intent: Intent.PROVIDE_INFO,
+      updates: [
+        createFieldUpdate({ field: "price", value: "€49", status: "confirmed" }),
+      ],
+    });
+    const result = reduceBrief(brief, extraction, 1);
+    expect(result.price.status).toBe(FieldStatus.CONFIRMED);
+    expect(result.price.value).toBe("€49");
+  });
+
   it("test_version_unchanged_when_same_confirmed_value", () => {
     const brief = createProductBrief({
       product_name: createFieldValue({

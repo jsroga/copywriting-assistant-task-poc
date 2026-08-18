@@ -38,8 +38,8 @@
 
 - [x] CHK017 Product description and marketing email (subject/body/CTA) requirements and length targets are explicit (FR-014, FR-015)
 - [x] CHK018 Validation-before-success is required (FR-016)
-- [x] CHK019 Objective validation rules include price, lengths, CTA, subject, feature coverage, placeholders, ForbiddenClaims (FR-017)
-- [x] CHK020 ForbiddenClaims naming (not NoHallucinatedClaims) is explicit (Edge Cases / FR-017)
+- [x] CHK019 Objective validation rules include price, lengths, CTA, subject, placeholders (FR-017)
+- [x] CHK020 Semantic feature coverage and unsupported-claim detection are prompt/eval concerns, not lexical runtime validators (FR-017)
 - [x] CHK021 Exactly one automatic repair is unambiguous (FR-018)
 - [x] CHK022 No second automatic repair on continued failure is unambiguous (FR-019)
 

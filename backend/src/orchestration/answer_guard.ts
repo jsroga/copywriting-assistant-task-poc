@@ -7,29 +7,21 @@ import {
   REQUIRED_FIELDS,
 } from "../domain/models.ts";
 
-const PRICE_CONFIRMED_RE = /\d|(?:pln|usd|eur|gbp|zł)\b|[$€£]/i;
-const PRICE_VAGUE_RE =
-  /\b(cheap|cheaper|cheapest|expensive|affordable|budget|pricey|inexpensive|costly|reasonable|low[\s-]?cost|high[\s-]?end|around|about|approximately|roughly|starting|from)\b/i;
-
-function priceText(update: FieldUpdate): string {
-  if (update.status === "confirmed" && update.value !== null) {
-    if (Array.isArray(update.value)) {
-      return update.value.map((item) => String(item)).join(" ");
-    }
-    return String(update.value);
+function nonEmptyText(value: string | string[] | null): boolean {
+  if (typeof value === "string") {
+    return Boolean(value.trim());
   }
-  return update.raw_text ?? "";
+  if (Array.isArray(value)) {
+    return value.some((item) => String(item).trim());
+  }
+  return false;
 }
 
 function isAcceptablePrice(update: FieldUpdate): boolean {
-  const text = priceText(update).trim();
-  if (!text) {
-    return false;
-  }
   if (update.status === "confirmed") {
-    return PRICE_CONFIRMED_RE.test(text);
+    return nonEmptyText(update.value);
   }
-  return PRICE_VAGUE_RE.test(text);
+  return Boolean((update.raw_text ?? "").trim());
 }
 
 function isAcceptableAnswer(field: BriefFieldName, update: FieldUpdate): boolean {

@@ -1,10 +1,8 @@
-import { meaningfulFeatures } from "../gate.ts";
 import {
   type GeneratedCopy,
   type ProductBrief,
   type Violation,
   type ViolationArtifact,
-  BRIEF_FIELDS,
   FieldStatus,
   ViolationCode,
 } from "../models.ts";
@@ -20,22 +18,11 @@ export const DESCRIPTION_MAX_WORDS = 200;
 export const EMAIL_MIN_WORDS = 80;
 export const EMAIL_MAX_WORDS = 250;
 export const SUBJECT_MAX_CHARS = 60;
-/** Deliberate POC heuristic, not a tuned value. */
-export const FEATURE_COVERAGE_MIN_RATIO = 0.7;
-/** Deliberate POC heuristic, not a tuned value. */
-export const FEATURE_WORD_MATCH_MIN_RATIO = 0.5;
 
 export const PLACEHOLDER_PATTERNS = [
   "\\[TODO\\]",
   "\\{\\{product_name\\}\\}",
   "lorem ipsum",
-] as const;
-
-export const FORBIDDEN_CLAIMS = [
-  "fda approved",
-  "clinically proven",
-  "guaranteed results",
-  "#1",
 ] as const;
 
 export function validatePricePresence(
@@ -149,49 +136,6 @@ export function validateSubject(
   ];
 }
 
-function featureCovered(feature: string, text: string): boolean {
-  const normalized = feature.trim().toLowerCase().replace(/\s+/g, " ");
-  const haystack = text.toLowerCase();
-  if (normalized && haystack.includes(normalized)) {
-    return true;
-  }
-  const words = normalized.split(/\W+/).filter((word) => word.length > 2);
-  if (words.length === 0) {
-    return Boolean(normalized) && haystack.includes(normalized);
-  }
-  const hits = words.filter((word) => {
-    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return new RegExp(`\\b${escaped}\\b`, "i").test(haystack);
-  }).length;
-  return hits / words.length >= FEATURE_WORD_MATCH_MIN_RATIO;
-}
-
-export function validateFeatureCoverage(
-  output: GeneratedCopy,
-  brief: ProductBrief,
-): Violation[] {
-  const features = meaningfulFeatures(brief.key_features.value);
-  if (features.length === 0) {
-    return [];
-  }
-  const covered = features.filter((feature) =>
-    featureCovered(feature, output.product_description),
-  ).length;
-  const ratio = covered / features.length;
-  if (ratio >= FEATURE_COVERAGE_MIN_RATIO) {
-    return [];
-  }
-  return [
-    {
-      code: ViolationCode.FEATURE_COVERAGE,
-      message:
-        `Product description covers ${covered}/${features.length} ` +
-        `key features (${Math.round(ratio * 100)}%); need at least 70%`,
-      artifact: "description",
-    },
-  ];
-}
-
 export function validatePlaceholders(
   output: GeneratedCopy,
   _brief: ProductBrief,
@@ -209,43 +153,4 @@ export function validatePlaceholders(
     }
   }
   return [];
-}
-
-function briefTextBlob(brief: ProductBrief): string {
-  const parts: string[] = [];
-  for (const name of BRIEF_FIELDS) {
-    const field = brief[name];
-    if (field.value === null) {
-      continue;
-    }
-    if (Array.isArray(field.value)) {
-      parts.push(...field.value.map((item) => String(item)));
-    } else {
-      parts.push(String(field.value));
-    }
-    if (field.raw_text) {
-      parts.push(field.raw_text);
-    }
-  }
-  parts.push(...brief.assumptions);
-  return parts.join(" ").toLowerCase();
-}
-
-export function validateForbiddenClaims(
-  output: GeneratedCopy,
-  brief: ProductBrief,
-): Violation[] {
-  const blob = visibleText(output).toLowerCase();
-  const supported = briefTextBlob(brief);
-  const violations: Violation[] = [];
-  for (const claim of FORBIDDEN_CLAIMS) {
-    if (blob.includes(claim) && !supported.includes(claim)) {
-      violations.push({
-        code: ViolationCode.FORBIDDEN_CLAIM,
-        message: `Unsupported claim detected: ${claim}`,
-        artifact: "both",
-      });
-    }
-  }
-  return violations;
 }
