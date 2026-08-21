@@ -2,6 +2,8 @@
 
 ![System architecture: deterministic core with replaceable edges](architecture.svg)
 
+Simplified flow: Extract → Reduce → Gate → Confirm → Generate → Validate → max 1 Repair.
+
 Conversational take-home prototype: gather product facts into a typed `ProductBrief`, ask deterministic follow-ups, confirm, then generate a validated product description and marketing email with at most one automatic repair. The web UI is a thin demo — interface polish is not the deliverable.
 
 ## Architecture
